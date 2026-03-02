@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Studio 20 | System BIOS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&family=Outfit:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gc-indigo: #4b3da5;
+            --gc-indigo-dark: #1b1b4b;
+            --gc-blue: #3d52d5;
+            --gc-glass: rgba(61, 82, 213, 0.2);
+            --gc-glow: rgba(79, 172, 254, 0.5);
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #000;
+            background-image: radial-gradient(circle at center, #1b2668 0%, #000 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; 
+        }
+
+        /* --- FIXED 3D CUBE (TOP LEFT) --- */
+        .header-cube-container {
+            width: 60px;
+            height: 60px;
+            perspective: 600px;
+            margin: 10px; /* Give space for 3D rotation clipping */
+        }
+        @media (min-width: 768px) {
+            .header-cube-container { width: 80px; height: 80px; }
+        }
+        .header-cube {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            animation: rotateFull 20s infinite linear;
+        }
+        @keyframes rotateFull {
+            from { transform: rotateX(0deg) rotateY(0deg); }
+            to { transform: rotateX(360deg) rotateY(360deg); }
+        }
+        .h-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 2px solid rgba(255,255,255,0.4);
+            background: linear-gradient(135deg, rgba(106, 90, 205, 0.9), rgba(61, 82, 213, 0.8));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 14px;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+            backface-visibility: hidden;
+        }
+        @media (min-width: 768px) { .h-face { font-size: 16px; } }
+        
+        .h-face-front  { transform: rotateY(0deg) translateZ(30px); }
+        .h-face-back   { transform: rotateY(180deg) translateZ(30px); }
+        .h-face-right  { transform: rotateY(90deg) translateZ(30px); }
+        .h-face-left   { transform: rotateY(-90deg) translateZ(30px); }
+        .h-face-top    { transform: rotateX(90deg) translateZ(30px); }
+        .h-face-bottom { transform: rotateX(-90deg) translateZ(30px); }
+
+        @media (min-width: 768px) {
+            .h-face-front  { transform: rotateY(0deg) translateZ(40px); }
+            .h-face-back   { transform: rotateY(180deg) translateZ(40px); }
+            .h-face-right  { transform: rotateY(90deg) translateZ(40px); }
+            .h-face-left   { transform: rotateY(-90deg) translateZ(40px); }
+            .h-face-top    { transform: rotateX(90deg) translateZ(40px); }
+            .h-face-bottom { transform: rotateX(-90deg) translateZ(40px); }
+        }
+
+        /* --- NAVIGATION BUTTONS --- */
+        .nav-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2d1b6b, #1b2668);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4), inset 0 2px 5px rgba(255,255,255,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+        }
+        @media (min-width: 768px) { .nav-btn { width: 65px; height: 65px; border-width: 3px; } }
+        
+        .nav-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            border-color: #fff;
+            box-shadow: 0 0 20px var(--gc-blue);
+        }
+        .nav-btn-icon { font-size: 20px; }
+        @media (min-width: 768px) { .nav-btn-icon { font-size: 26px; } }
+
+        /* --- MEMORY BLOCKS --- */
+        .memory-block {
+            transition: all 0.2s;
+            position: relative;
+            z-index: 10;
+            border: 2px solid transparent;
+            border-radius: 12px;
+            padding: 4px;
+        }
+        .memory-block.highlighted {
+            border-color: #fff;
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+        }
+
+        /* --- ADD PROMPT ON FOCUSED BLOCK --- */
+        .add-prompt {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            z-index: 50;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease-out, transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform: scale(0.5);
+        }
+        .memory-block.highlighted .add-prompt {
+            opacity: 1;
+            transform: scale(1);
+            pointer-events: auto;
+        }
+        
+        .block-cube-container { width: 50px; height: 50px; perspective: 400px; }
+        @media (min-width: 768px) { .block-cube-container { width: 60px; height: 60px; } }
+        
+        .block-cube {
+            width: 100%; height: 100%; position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .memory-block:hover .block-cube, .memory-block.highlighted .block-cube {
+            transform: rotateX(-20deg) rotateY(20deg) scale(1.15);
+        }
+        
+        .memory-block.highlighted .block-cube {
+            animation: blockBounce 0.6s infinite alternate ease-in-out;
+        }
+
+        @keyframes blockBounce {
+            from { transform: translateY(0) rotateX(-20deg) rotateY(20deg) scale(1.15); }
+            to { transform: translateY(-10px) rotateX(-20deg) rotateY(20deg) scale(1.15); }
+        }
+        .b-face {
+            position: absolute;
+            width: 100%; height: 100%;
+            border: 1.5px solid rgba(255,255,255,0.3);
+            background: linear-gradient(135deg, #6a5acd, #4b3da5);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px; box-shadow: inset 0 0 15px rgba(0,0,0,0.3);
+            backface-visibility: hidden;
+        }
+        @media (min-width: 768px) { .b-face { font-size: 32px; } }
+        
+        .b-face-front { transform: rotateY(0deg) translateZ(25px); }
+        .b-face-back  { transform: rotateY(180deg) translateZ(25px); }
+        .b-face-right { transform: rotateY(90deg) translateZ(25px); }
+        .b-face-left  { transform: rotateY(-90deg) translateZ(25px); }
+        .b-face-top   { transform: rotateX(90deg) translateZ(25px); }
+        .b-face-bottom{ transform: rotateX(-90deg) translateZ(25px); }
+
+        @media (min-width: 768px) {
+            .b-face-front { transform: rotateY(0deg) translateZ(30px); }
+            .b-face-back  { transform: rotateY(180deg) translateZ(30px); }
+            .b-face-right { transform: rotateY(90deg) translateZ(30px); }
+            .b-face-left  { transform: rotateY(-90deg) translateZ(30px); }
+            .b-face-top   { transform: rotateX(90deg) translateZ(30px); }
+            .b-face-bottom{ transform: rotateX(-90deg) translateZ(30px); }
+        }
+
+        /* --- TABS --- */
+        .tab-item {
+            background: #1b2668;
+            border: 2px solid rgba(255,255,255,0.2);
+            border-bottom: none;
+            padding: 8px 15px;
+            border-radius: 10px 10px 0 0;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: rgba(255,255,255,0.5);
+            margin-right: 2px;
+            position: relative;
+            top: 2px;
+            z-index: 1;
+            white-space: nowrap;
+        }
+        @media (min-width: 768px) {
+            .tab-item { padding: 10px 30px; font-size: 14px; margin-right: 4px; border-radius: 12px 12px 0 0; }
+        }
+        
+        .tab-item.active {
+            background: var(--gc-blue);
+            color: white;
+            border-color: white;
+            box-shadow: 0 -5px 15px rgba(61, 82, 213, 0.4);
+            transform: translateY(-2px);
+            z-index: 10;
+        }
+
+        .system-panel {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0 16px 16px 16px;
+            backdrop-filter: blur(10px);
+            position: relative;
+            z-index: 5;
+            box-shadow: inset 0 0 40px rgba(0,0,0,0.4);
+        }
+        @media (min-width: 768px) { .system-panel { border-width: 3px; border-radius: 0 24px 24px 24px; } }
+
+        /* --- HUD & PREVIEW --- */
+        .info-bar {
+            background: linear-gradient(to right, #001a7d, #0033cc, #001a7d);
+            border: 2px solid #3d52d5;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            transition: background 0.3s;
+        }
+
+        .preview-window {
+            width: 80px;
+            height: 50px;
+            background: #000;
+            border: 2px solid rgba(255,255,255,0.3);
+            position: relative;
+            overflow: hidden;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        @media (min-width: 768px) { .preview-window { width: 120px; height: 70px; } }
+        
+        .preview-window:hover { border-color: #fff; transform: scale(1.05); }
+        .preview-window::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(255, 255, 255, 0.1) 50%);
+            background-size: 100% 4px;
+            pointer-events: none;
+        }
+
+        /* --- SAVING TOAST --- */
+        .system-toast {
+            position: fixed;
+            bottom: 25%;
+            left: 50%;
+            transform: translate(-50%, 100%);
+            background: linear-gradient(to bottom, #2d1b6b, #1b2668);
+            border: 2px solid #fff;
+            padding: 15px 25px;
+            border-radius: 12px;
+            z-index: 3000;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-align: center;
+            width: 90%;
+            max-width: 320px;
+        }
+        @media (min-width: 768px) { .system-toast { padding: 20px 40px; } }
+        .system-toast.active { transform: translate(-50%, 0); opacity: 1; }
+        
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 3px;
+            margin-top: 15px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #00ff88;
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+
+        /* --- CONFETTI --- */
+        .confetti {
+            position: absolute;
+            width: 6px; height: 6px;
+            pointer-events: none;
+            z-index: 100;
+            border-radius: 1px;
+        }
+        @media (min-width: 768px) { .confetti { width: 8px; height: 8px; } }
+        
+        @keyframes confetti-pop {
+            0% { transform: scale(1) translate(0, 0); opacity: 1; }
+            100% { transform: scale(0) translate(var(--tx), var(--ty)); opacity: 0; }
+        }
+
+        .scanlines {
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.05) 50%);
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .btn-circle {
+            width: 22px; height: 22px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: black; font-weight: 900; font-size: 11px;
+        }
+        @media (min-width: 768px) { .btn-circle { width: 28px; height: 28px; font-size: 14px; } }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Search styling */
+        #bios-search {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            color: white;
+            font-size: 10px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            outline: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 100px;
+            padding: 4px 10px;
+        }
+        #bios-search:focus {
+            width: 180px;
+            background: rgba(255, 255, 255, 0.15);
+            border-color: white;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body class="p-4 md:p-10">
+    <div class="scanlines"></div>
+
+    <!-- SAVING TOAST -->
+    <div id="save-toast" class="system-toast">
+        <h4 class="text-lg md:text-xl font-black italic uppercase text-white mb-1">WRITING DATA...</h4>
+        <p class="text-[9px] md:text-[10px] font-bold text-blue-200 uppercase tracking-widest" id="toast-message">Saving to Slot A</p>
+        <div class="progress-bar">
+            <div id="save-progress" class="progress-fill"></div>
+        </div>
+        <p class="text-[8px] mt-2 opacity-40 uppercase">Please do not remove memory card</p>
+    </div>
+
+    <!-- MAIN CONTAINER: Expanded max-width for widescreen -->
+    <div class="flex-1 flex flex-col max-w-[95%] 2xl:max-w-[1800px] mx-auto w-full overflow-hidden">
+        <!-- Top BIOS Header: Added padding for 3D elements -->
+        <header class="flex flex-col md:flex-row justify-between items-center md:items-end mb-4 md:mb-6 gap-4 md:gap-8 pt-4 md:pt-2 px-2">
+            <div class="flex items-center gap-4 md:gap-8 w-full md:w-auto">
+                <div class="header-cube-container flex-shrink-0">
+                    <div class="header-cube">
+                        <div class="h-face h-face-front">VS</div>
+                        <div class="h-face h-face-back">20</div>
+                        <div class="h-face h-face-right">🎮</div>
+                        <div class="h-face h-face-left">📼</div>
+                        <div class="h-face h-face-top">💿</div>
+                        <div class="h-face h-face-bottom">💾</div>
+                    </div>
+                </div>
+                <div class="overflow-hidden">
+                    <h1 class="text-2xl md:text-4xl font-black italic uppercase tracking-tighter text-blue-200 truncate">Video Studio 20</h1>
+                    <p class="text-[8px] md:text-xs tracking-[0.3em] md:tracking-[0.5em] uppercase opacity-40">Media Exchange & Retail v2.0</p>
+                </div>
+            </div>
+
+            <!-- Navigation Buttons: Added padding right to prevent clipping on scaling -->
+            <nav class="flex gap-4 md:gap-8 justify-center w-full md:w-auto md:pr-4">
+                <div class="flex flex-col items-center gap-1 group cursor-pointer" onclick="openWindow('about')">
+                    <div class="nav-btn">
+                        <span class="nav-btn-icon">👤</span>
+                    </div>
+                    <span class="text-[8px] md:text-[9px] font-bold uppercase tracking-[0.1em] md:tracking-[0.2em] opacity-60 group-hover:opacity-100">About</span>
+                </div>
+                <div class="flex flex-col items-center gap-1 group cursor-pointer" onclick="openWindow('map')">
+                    <div class="nav-btn">
+                        <span class="nav-btn-icon">📍</span>
+                    </div>
+                    <span class="text-[8px] md:text-[9px] font-bold uppercase tracking-[0.1em] md:tracking-[0.2em] opacity-60 group-hover:opacity-100">Map</span>
+                </div>
+                <div class="flex flex-col items-center gap-1 group cursor-pointer" onclick="openWindow('contact')">
+                    <div class="nav-btn">
+                        <span class="nav-btn-icon">📩</span>
+                    </div>
+                    <span class="text-[8px] md:text-[9px] font-bold uppercase tracking-[0.1em] md:tracking-[0.2em] opacity-60 group-hover:opacity-100">Sell</span>
+                </div>
+            </nav>
+        </header>
+
+        <!-- Slot Tab System + Search -->
+        <div class="flex items-end justify-between overflow-x-auto no-scrollbar" id="tab-controls">
+            <div class="flex" id="category-tabs">
+                <div class="tab-item active" data-category="all">Slot A: All Data</div>
+                <div class="tab-item" data-category="games">Slot B: Games</div>
+                <div class="tab-item" data-category="vhs">Slot C: Media</div>
+                <div class="tab-item" data-category="cards">Slot D: Cards</div>
+            </div>
+            <!-- Search bar to the right -->
+            <div class="pb-2 pr-4 hidden md:flex items-center gap-3">
+                <label for="bios-search" class="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">Search:</label>
+                <div class="relative flex items-center">
+                    <input type="text" id="bios-search" placeholder="FILE_NAME" spellcheck="false" autocomplete="off">
+                    <span class="absolute right-3 text-[10px] opacity-30 pointer-events-none">🔍</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main BIOS Grid: Expanded columns for large screens -->
+        <div class="flex-1 system-panel mb-4 md:mb-8 overflow-y-auto no-scrollbar">
+            <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 2xl:grid-cols-12 gap-x-4 gap-y-6 md:gap-x-10 md:gap-y-12 p-4 md:p-10" id="memory-grid">
+                <!-- Blocks dynamically generated -->
+            </div>
+        </div>
+
+        <!-- BIOS HUD -->
+        <div class="space-y-3 md:space-y-4">
+            <div class="info-bar p-3 md:p-4 rounded-lg flex flex-row items-center justify-between gap-2" id="hud-bar">
+                <div class="flex flex-col justify-center overflow-hidden">
+                    <h2 class="text-lg md:text-2xl font-black italic uppercase text-white truncate" id="active-name">Select System File</h2>
+                    <div class="flex gap-4 md:gap-6 text-[10px] md:text-xs font-bold text-blue-200 opacity-80" id="hud-stats">
+                        <span id="active-stat-1" class="truncate">Video Studio BIOS</span>
+                        <span id="active-stat-2" class="shrink-0">-- / -- Blocks</span>
+                    </div>
+                </div>
+                <!-- HUD Preview Window -->
+                <div class="preview-window flex items-center justify-center bg-black" id="hud-preview" onclick="openGamePreview()">
+                    <div id="preview-render" class="text-2xl md:text-4xl animate-pulse">💿</div>
+                    <div id="preview-label" class="absolute bottom-1 right-1 text-[6px] md:text-[8px] uppercase font-bold opacity-40">Live Feed</div>
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row justify-between items-center px-2 md:px-4 gap-3">
+                <!-- ACTION BUTTONS: Hidden until an item is selected -->
+                <div class="flex gap-6 md:gap-10 opacity-0 pointer-events-none transition-opacity duration-200" id="hud-actions">
+                    <div class="flex items-center gap-2 md:gap-3 font-bold uppercase text-[10px] md:text-xs cursor-pointer hover:scale-105 transition-transform" id="confirm-add">
+                        <div class="btn-circle bg-green-500 shadow-md">A</div>
+                        <span>Add</span>
+                    </div>
+                    <div class="flex items-center gap-2 md:gap-3 font-bold uppercase text-[10px] md:text-xs cursor-pointer hover:scale-105 transition-transform" id="cancel-action">
+                        <div class="btn-circle bg-red-500 shadow-md">B</div>
+                        <span>Cancel</span>
+                    </div>
+                </div>
+                <div id="cart-btn-ui" class="flex items-center gap-3 md:gap-4 cursor-pointer group">
+                    <div class="text-right">
+                        <p class="text-[8px] md:text-[10px] uppercase font-bold opacity-40">Saved Items</p>
+                        <p class="text-sm md:text-lg font-black leading-none" id="cart-count">0</p>
+                    </div>
+                    <div id="cart-icon-container" class="w-10 h-10 md:w-12 md:h-12 bg-white/10 rounded-lg border border-white/20 flex items-center justify-center group-hover:bg-blue-600 transition-colors">
+                        🛒
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SYSTEM WINDOW (MODAL) -->
+    <div id="sys-window" class="fixed inset-0 hidden z-[500] items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-md" onclick="closeWindow()"></div>
+        <div class="relative w-full max-w-4xl bg-[#1b1b4b] border-4 border-white/30 rounded-xl h-[80vh] flex flex-col overflow-hidden shadow-2xl">
+            <div class="bg-blue-900/50 p-4 border-b-2 border-white/20 flex justify-between items-center">
+                <h3 class="font-black italic uppercase text-lg text-blue-200 truncate pr-4" id="win-title">BOOTING...</h3>
+                <button onclick="closeWindow()" class="text-3xl md:text-4xl leading-none opacity-50 hover:opacity-100 flex-shrink-0">&times;</button>
+            </div>
+            <div class="flex-1 relative" id="win-body">
+                <div id="win-loader" class="absolute inset-0 flex flex-col items-center justify-center gap-6 p-4">
+                    <div class="w-12 h-12 md:w-20 md:h-20 border-4 md:border-8 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
+                    <p class="font-mono text-[10px] md:text-xs tracking-[0.3em] md:tracking-[0.5em] animate-pulse text-center">READING DATA...</p>
+                </div>
+                <div id="win-content" class="hidden h-full p-4 md:p-10 overflow-y-auto no-scrollbar"></div>
+            </div>
+            <div class="bg-black/30 p-2 md:p-3 text-center border-t border-white/10">
+                <p class="text-[8px] md:text-[10px] uppercase tracking-[0.2em] md:tracking-[0.4em] opacity-30" id="win-footer-text">Press B to return to Menu</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const inventory = [
+            { id: 1, category: 'games', name: 'Mario Sunshine', icon: '☀️', price: 65, blocks: '7/24' },
+            { id: 2, category: 'games', name: 'Metroid Prime', icon: '👩‍🚀', price: 55, blocks: '1/1' },
+            { id: 3, category: 'vhs', name: 'Iron Giant', icon: '🤖', price: 20, blocks: 'VHS' },
+            { id: 4, category: 'cards', name: 'Blue-Eyes', icon: '🐉', price: 120, blocks: 'Holo' },
+            { id: 5, category: 'games', name: 'Pikmin 2', icon: '🌱', price: 80, blocks: '15/15' },
+            { id: 6, category: 'vhs', name: 'Jurassic Park', icon: '🦖', price: 15, blocks: 'PAL' },
+            { id: 7, category: 'cards', name: 'Charizard', icon: '🔥', price: 450, blocks: 'Shadow' },
+            { id: 8, category: 'games', name: 'Wind Waker', icon: '⛵', price: 110, blocks: 'CIB' },
+            { id: 9, category: 'vhs', name: 'Space Jam', icon: '🏀', price: 10, blocks: 'Mint' },
+            { id: 10, category: 'cards', name: 'Exodia', icon: '🤚', price: 85, blocks: 'Rare' },
+            { id: 11, category: 'games', name: 'F-Zero GX', icon: '🏎️', price: 90, blocks: '1/1' },
+            { id: 12, category: 'vhs', name: 'Akira', icon: '🏍️', price: 35, blocks: 'Subbed' }
+        ];
+
+        let cart = [];
+        let currentItem = null;
+        let isSaving = false;
+        let selectedId = null; 
+        let currentSearchQuery = "";
+
+        function renderGrid(filter = 'all', query = "") {
+            const $grid = $('#memory-grid');
+            $grid.empty();
+            let items = filter === 'all' ? inventory : inventory.filter(i => i.category === filter);
+            
+            if (query) {
+                const lowerQuery = query.toLowerCase();
+                items = items.filter(i => i.name.toLowerCase().includes(lowerQuery));
+            }
+            
+            if (items.length === 0) {
+                $grid.append(`<div class="col-span-full py-20 text-center opacity-20 uppercase font-black italic text-xl tracking-widest">No Data Found</div>`);
+            }
+
+            items.forEach(p => {
+                const isThisSelected = selectedId === p.id;
+                $grid.append(`
+                    <div class="memory-block flex flex-col items-center gap-2 md:gap-3 cursor-pointer group ${isThisSelected ? 'highlighted' : ''}" 
+                         id="block-${p.id}"
+                         onclick="handleInteraction(${p.id}, this, event)"
+                         onmouseenter="handleHover(${p.id})">
+                        
+                        <div class="add-prompt btn-circle bg-green-500 shadow-lg scale-110">A</div>
+
+                        <div class="block-cube-container">
+                            <div class="block-cube">
+                                <div class="b-face b-face-front">${p.icon}</div>
+                                <div class="b-face b-face-back">${p.icon}</div>
+                                <div class="b-face b-face-right">${p.icon}</div>
+                                <div class="b-face b-face-left">${p.icon}</div>
+                                <div class="b-face b-face-top">${p.icon}</div>
+                                <div class="b-face b-face-bottom">${p.icon}</div>
+                            </div>
+                        </div>
+                        <span class="text-[8px] md:text-[9px] font-bold uppercase opacity-30 group-hover:opacity-100 text-center truncate w-full">${p.name}</span>
+                    </div>
+                `);
+            });
+        }
+
+        function handleHover(id) {
+            if (isSaving || selectedId !== null) return;
+            updateInfo(id);
+        }
+
+        function handleInteraction(id, el, event) {
+            if (isSaving) return;
+
+            if (selectedId === id) {
+                addToCart(id, el, event);
+                return;
+            }
+
+            selectedId = id;
+            $('.memory-block').removeClass('highlighted');
+            $(el).addClass('highlighted');
+            $('#hud-actions').removeClass('opacity-0 pointer-events-none');
+            updateInfo(id);
+        }
+
+        function deselectAll() {
+            selectedId = null;
+            $('.memory-block').removeClass('highlighted');
+            $('#hud-actions').addClass('opacity-0 pointer-events-none');
+            $('#active-name').text('Select System File');
+            $('#active-stat-1').text('Video Studio BIOS');
+            $('#active-stat-2').text('-- / -- Blocks');
+            $('#preview-render').text('💿').addClass('animate-pulse');
+        }
+
+        function updateInfo(id) {
+            const item = inventory.find(i => i.id === id);
+            currentItem = item;
+            $('#active-name').text(item.name);
+            $('#active-stat-1').text('$' + item.price.toFixed(2));
+            $('#active-stat-2').text(item.blocks + ' Save Data');
+            $('#preview-render').text(item.icon).removeClass('animate-pulse').addClass('scale-110');
+            setTimeout(() => $('#preview-render').removeClass('scale-110'), 200);
+        }
+
+        function spawnConfetti(x, y) {
+            const count = 10;
+            const colors = ['#6a5acd', '#4b3da5', '#3d52d5', '#ffffff'];
+            for (let i = 0; i < count; i++) {
+                const $c = $('<div class="confetti"></div>');
+                const tx = (Math.random() - 0.5) * 150;
+                const ty = (Math.random() - 0.5) * 150;
+                $c.css({
+                    left: x + 'px', top: y + 'px',
+                    background: colors[Math.floor(Math.random() * colors.length)],
+                    '--tx': tx + 'px', '--ty': ty + 'px',
+                    animation: 'confetti-pop 0.6s ease-out forwards'
+                });
+                $('body').append($c);
+                setTimeout(() => $c.remove(), 600);
+            }
+        }
+
+        function addToCart(id, el, event) {
+            if (isSaving) return;
+            isSaving = true;
+
+            const item = inventory.find(i => i.id === id);
+            cart.push(item);
+
+            const x = event.pageX || (event.touches ? event.touches[0].pageX : 0);
+            const y = event.pageY || (event.touches ? event.touches[0].pageY : 0);
+            spawnConfetti(x, y);
+
+            $(el).find('.block-cube').css('transition', 'transform 0.6s').css('transform', 'rotateY(360deg)');
+            
+            const $toast = $('#save-toast');
+            const $progress = $('#save-progress');
+            
+            $toast.addClass('active');
+            $progress.css('width', '0%');
+
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 5;
+                $progress.css('width', progress + '%');
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    $('#cart-count').text(cart.length);
+                    $('#toast-message').text('SAVE COMPLETE!');
+                    
+                    setTimeout(() => {
+                        $toast.removeClass('active');
+                        isSaving = false;
+                        deselectAll();
+                        $(el).find('.block-cube').css('transition', '');
+                        setTimeout(() => $('#toast-message').text('Saving to Slot A'), 400);
+                    }, 800);
+                }
+            }, 50);
+        }
+
+        function openGamePreview() {
+            if (!currentItem) return;
+            openWindow('game-preview');
+        }
+
+        function openWindow(type) {
+            const $win = $('#sys-window');
+            const $loader = $('#win-loader');
+            const $content = $('#win-content');
+            const $title = $('#win-title');
+
+            $title.text('BOOTING...');
+            $content.addClass('hidden');
+            $loader.removeClass('hidden');
+            $win.fadeIn(200).css('display', 'flex');
+
+            setTimeout(() => {
+                $loader.addClass('hidden');
+                $content.removeClass('hidden');
+                populateWindow(type);
+            }, 1200);
+        }
+
+        function closeWindow() { $('#sys-window').fadeOut(200); }
+
+        function populateWindow(type) {
+            const $title = $('#win-title');
+            const $content = $('#win-content');
+            $('#win-footer-text').text('Press B to return to Menu');
+
+            if(type === 'cart') {
+                $title.text('Archive Contents: Slot A');
+                let cartHtml = `
+                    <div class="space-y-6">
+                        <h4 class="text-xl md:text-2xl font-black italic uppercase text-blue-200 border-b border-white/10 pb-2">Stored Data Packets</h4>
+                        <div class="space-y-2 max-h-[300px] overflow-y-auto pr-2 no-scrollbar">
+                `;
+                
+                if(cart.length === 0) {
+                    cartHtml += `<p class="opacity-40 text-sm py-8 text-center uppercase tracking-widest italic">Memory Slot Empty</p>`;
+                } else {
+                    let total = 0;
+                    cart.forEach((item, index) => {
+                        total += item.price;
+                        cartHtml += `
+                            <div class="flex items-center justify-between bg-blue-900/40 p-3 rounded-lg border border-white/10">
+                                <div class="flex items-center gap-4">
+                                    <span class="text-2xl">${item.icon}</span>
+                                    <div>
+                                        <p class="font-bold text-xs uppercase">${item.name}</p>
+                                        <p class="text-[9px] opacity-40">${item.category.toUpperCase()} // ${item.blocks}</p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="font-black text-sm">$${item.price.toFixed(2)}</p>
+                                    <button onclick="removeFromCart(${index})" class="text-[8px] text-red-400 uppercase font-bold hover:underline">Delete</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    cartHtml += `
+                        </div>
+                        <div class="mt-8 pt-4 border-t-2 border-white/20 flex justify-between items-end">
+                            <div>
+                                <p class="text-[10px] uppercase font-bold opacity-40">Total Valuation</p>
+                                <p class="text-3xl font-black text-white">$${total.toFixed(2)}</p>
+                            </div>
+                            <button onclick="checkout()" class="bg-blue-600 px-8 py-3 rounded font-black uppercase text-sm shadow-[0_4px_0_#2d1b6b] active:translate-y-1 active:shadow-none transition-all hover:bg-blue-500">
+                                Confirm Checkout
+                            </button>
+                        </div>
+                    `;
+                }
+                cartHtml += `</div>`;
+                $content.html(cartHtml);
+            } else if(type === 'game-preview' && currentItem) {
+                $title.text(`BOOTING: ${currentItem.name}`);
+                $content.html(`
+                    <div class="flex flex-col items-center justify-center h-full gap-4 md:gap-8">
+                        <div class="text-[80px] md:text-[120px] drop-shadow-[0_0_30px_rgba(255,255,255,0.4)] animate-bounce">
+                            ${currentItem.icon}
+                        </div>
+                        <div class="text-center space-y-2 md:space-y-4">
+                            <h4 class="text-2xl md:text-4xl font-black italic uppercase text-blue-300">${currentItem.name}</h4>
+                            <div class="flex gap-2 md:gap-4 justify-center">
+                                <span class="bg-blue-900 px-3 md:px-4 py-1 rounded-full text-[10px] md:text-xs font-bold">${currentItem.blocks} BLOCKS</span>
+                                <span class="bg-blue-900 px-3 md:px-4 py-1 rounded-full text-[10px] md:text-xs font-bold">$${currentItem.price.toFixed(2)}</span>
+                            </div>
+                        </div>
+                    </div>
+                `);
+            } else if(type === 'about') {
+                $title.text('System Information: VS20');
+                $content.html(`
+                    <div class="space-y-4 md:space-y-8">
+                        <h4 class="text-xl md:text-3xl font-black text-blue-300 italic uppercase">Boutique Media Preservation</h4>
+                        <p class="text-sm md:text-lg opacity-70 leading-relaxed italic">
+                            Video Studio 20 is a conceptual retail mockup inspired by the tactile interfaces of early millennium hardware. We focus on "High-Bitrate" nostalgia—archiving physical media heritage.
+                        </p>
+                        <div class="bg-blue-600/20 border-2 border-blue-400/40 p-4 rounded-xl">
+                            <p class="text-[10px] md:text-xs font-black uppercase tracking-widest text-blue-300 mb-2">Platform Protocol</p>
+                            <p class="text-[10px] md:text-xs opacity-60 leading-relaxed">
+                                All assets, interactions, and system sounds are simulated. This is a mockup designed to test aesthetic navigation in a modern web environment.
+                            </p>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-indigo-900/40 p-4 rounded-lg border border-white/10">
+                                <h5 class="text-[10px] font-bold uppercase mb-1 text-blue-400">Inventory Sync</h5>
+                                <p class="text-xs">Real-time Archive</p>
+                            </div>
+                            <div class="bg-indigo-900/40 p-4 rounded-lg border border-white/10">
+                                <h5 class="text-[10px] font-bold uppercase mb-1 text-blue-400">Interface Mode</h5>
+                                <p class="text-xs">BIOS Classic</p>
+                            </div>
+                        </div>
+                    </div>
+                `);
+            } else if(type === 'map') {
+                $title.text('Global Map: Coordinates');
+                $content.html(`<div class="h-full bg-black/50 border-2 border-blue-500/30 rounded-lg overflow-hidden min-h-[200px]"><iframe width="100%" height="100%" frameborder="0" style="filter: invert(90%) hue-rotate(180deg) contrast(1.2);" src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3153.018259223547!2d-122.4194155!3d37.7749295!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzfCsDQ2JzI5LjciTiAxMjLCsDI1JzA5LjkiVw!5e0!3m2!1sen!2sus!4v1614555555555"></iframe></div>`);
+            } else if(type === 'contact') {
+                $title.text('Transmission: Exchange Protocol');
+                $content.html(`
+                    <div class="max-w-md mx-auto space-y-4 md:space-y-6">
+                        <div class="text-center space-y-2">
+                            <p class="text-lg font-black uppercase text-blue-300">Initiate Trade-In</p>
+                            <p class="text-[10px] md:text-xs opacity-50 uppercase tracking-widest">Submit your physical inventory for system valuation.</p>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="space-y-1">
+                                <label class="text-[9px] uppercase font-bold opacity-40 ml-1">Archive ID / Name</label>
+                                <input type="text" placeholder="COMMANDER NAME" class="w-full bg-black/60 border border-white/20 p-3 rounded text-white text-sm outline-none focus:border-blue-400">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[9px] uppercase font-bold opacity-40 ml-1">Media Description</label>
+                                <textarea placeholder="DESCRIBE YOUR CARDS, TAPES, OR DISCS..." rows="4" class="w-full bg-black/60 border border-white/20 p-3 rounded text-white text-sm outline-none focus:border-blue-400 no-scrollbar"></textarea>
+                            </div>
+                        </div>
+                        <button onclick="closeWindow()" class="w-full bg-blue-600 py-3 md:py-4 font-black text-lg md:text-xl shadow-[0_5px_0_#2d1b6b] active:translate-y-1 transition-all hover:bg-blue-500">
+                            TRANSMIT DATA
+                        </button>
+                    </div>
+                `);
+            }
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            $('#cart-count').text(cart.length);
+            populateWindow('cart');
+        }
+
+        function checkout() {
+            if(cart.length === 0) return;
+            $('#win-content').html(`
+                <div class="flex flex-col items-center justify-center h-full gap-6">
+                    <div class="w-16 h-16 border-4 border-green-400 border-t-transparent rounded-full animate-spin"></div>
+                    <p class="font-black text-xl uppercase italic text-green-400">Finalizing Transaction...</p>
+                </div>
+            `);
+            setTimeout(() => {
+                cart = [];
+                $('#cart-count').text(0);
+                $('#win-content').html(`
+                    <div class="text-center space-y-4">
+                        <div class="text-6xl mb-6">✅</div>
+                        <h4 class="text-3xl font-black italic uppercase text-white">Archive Synchronized</h4>
+                        <p class="opacity-50 text-sm">Your order has been recorded into the system bios.</p>
+                        <button onclick="closeWindow()" class="mt-6 bg-white/10 px-8 py-3 rounded border border-white/20 uppercase font-black text-xs hover:bg-white/20">Return</button>
+                    </div>
+                `);
+            }, 2000);
+        }
+
+        $(document).ready(() => {
+            renderGrid();
+            
+            $('.tab-item').click(function() {
+                $('.tab-item').removeClass('active');
+                $(this).addClass('active');
+                deselectAll();
+                const category = $(this).data('category');
+                renderGrid(category, currentSearchQuery);
+            });
+
+            $('#bios-search').on('input', function() {
+                currentSearchQuery = $(this).val();
+                const category = $('.tab-item.active').data('category');
+                renderGrid(category, currentSearchQuery);
+            });
+
+            $('#confirm-add').click(function(e) {
+                if (selectedId !== null) {
+                    const el = document.getElementById(`block-${selectedId}`);
+                    addToCart(selectedId, el, e);
+                }
+            });
+
+            $('#cancel-action').click(function() {
+                deselectAll();
+            });
+
+            // Cart button click handler
+            $('#cart-btn-ui').click(() => {
+                openWindow('cart');
+            });
+
+            setInterval(() => {
+                const now = new Date();
+                $('#active-stat-1').text(now.toLocaleTimeString());
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
