@@ -669,6 +669,30 @@
             margin: 0;
         }
 
+        /* Floating Add Animation */
+        .cart-float {
+            position: fixed;
+            color: #68d391; /* Light green */
+            font-family: 'Fredoka', sans-serif;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            animation: floatUpCart 0.8s ease-out forwards;
+            pointer-events: none;
+            z-index: 9999;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+        
+        .cart-float .material-icons {
+            font-size: 20px;
+        }
+
+        @keyframes floatUpCart {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-40px) scale(1.2); }
+        }
+
         /* --- Dreamcast/SA2 Style Arcade Button --- */
         .btn-submit {
             background: linear-gradient(180deg, #63b3ed 0%, #3182ce 100%);
@@ -1165,18 +1189,41 @@
     }
 
     // When clicking a catalog item, ADD TO LIST directly
-    function selectCatalogItem(name, platform, price, stock) {
+    function selectCatalogItem(event, name, platform, price, stock) {
         // Check if item is already in list
         const existingItem = buyItemsList.find(i => i.name === name);
 
         if (existingItem) {
             if (existingItem.quantity >= stock) {
-                // Should not happen if overlay blocks click, but safe fallback
                 return;
             }
             existingItem.quantity += 1;
         } else {
             buyItemsList.push({ name, platform, price, stock, quantity: 1 });
+        }
+        
+        // Play floating add animation at EXACT click coordinates
+        if (event) {
+            const floater = $('<div class="cart-float">+1 <i class="material-icons">add_shopping_cart</i></div>');
+            
+            let x, y;
+            // Use precise mouse/tap coordinates if available
+            if (event.clientX !== undefined && event.clientY !== undefined) {
+                x = event.clientX - 30; // Offset left slightly to center over cursor
+                y = event.clientY - 20; // Offset up slightly so it spawns at cursor tip
+            } 
+            // Fallback to card center if coords fail
+            else if (event.currentTarget) {
+                const rect = event.currentTarget.getBoundingClientRect();
+                x = rect.left + (rect.width / 2) - 30; 
+                y = rect.top + 20;
+            }
+            
+            if (x !== undefined && y !== undefined) {
+                floater.css({ left: x + 'px', top: y + 'px' });
+                $('body').append(floater); // Append to body so it survives renderCatalog DOM wipe
+                setTimeout(() => floater.remove(), 800);
+            }
         }
         
         renderBuyList();
@@ -1232,7 +1279,7 @@
 
                 const maxedClass = isMaxed ? "item-maxed" : "";
                 const maxedOverlay = isMaxed ? `<div class="maxed-overlay"><div class="maxed-badge"><i class="material-icons">shopping_basket</i> IN CART</div></div>` : "";
-                const clickHandler = isMaxed ? "" : `onclick="selectCatalogItem('${safeName}', '${safeConsole}', ${item.price}, ${safeStock})"`;
+                const clickHandler = isMaxed ? "" : `onclick="selectCatalogItem(event, '${safeName}', '${safeConsole}', ${item.price}, ${safeStock})"`;
 
                 html += `
                 <div class="catalog-item ${maxedClass}" ${clickHandler}>
