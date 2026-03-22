@@ -64,7 +64,7 @@
             background-image: radial-gradient(circle at 50% 0%, #2a3b5c 0%, var(--bg-world) 80%);
             color: var(--text-main);
             font-family: 'Nunito', sans-serif;
-            font-size: 15px; /* Slightly reduced for compactness */
+            font-size: 15px; 
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -103,14 +103,32 @@
         @keyframes spinRing { 100% { transform: rotate(360deg); } }
 
         /* --- Wanted Items Tooltip Animation & Style --- */
-        @keyframes pulse-star {
-            0% { transform: scale(1) rotate(0deg); }
-            50% { transform: scale(1.2) rotate(15deg); }
-            100% { transform: scale(1) rotate(0deg); }
+        @keyframes bounce-shake {
+            0%, 100% { transform: translateY(0); }
+            20% { transform: translateY(-8px) rotate(-10deg); }
+            40% { transform: translateY(0) rotate(10deg); }
+            60% { transform: translateY(-4px) rotate(-5deg); }
+            80% { transform: translateY(0) rotate(5deg); }
         }
 
-        .info-tooltip-container { position: relative; display: inline-flex; align-items: center; margin-left: 10px; cursor: pointer; }
-        .animated-info-icon { animation: pulse-star 1.5s infinite; color: var(--highlight-yellow); font-size: 28px !important; text-shadow: 1px 1px 0px rgba(0,0,0,0.5); }
+        .info-tooltip-container { 
+            position: relative; 
+            display: inline-flex; 
+            align-items: center; 
+            margin-left: 10px; 
+            cursor: pointer; 
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            outline: none;
+        }
+        
+        .animated-info-icon { 
+            animation: bounce-shake 2s infinite; 
+            color: var(--highlight-yellow); 
+            font-size: 28px !important; 
+            text-shadow: 1px 1px 0px rgba(0,0,0,0.5); 
+        }
         
         .info-tooltip-text {
             visibility: hidden; opacity: 0; position: absolute; bottom: 130%; left: 50%; transform: translateX(-50%);
@@ -126,7 +144,12 @@
         }
 
         .info-tooltip-container:hover .info-tooltip-text,
-        .info-tooltip-container:active .info-tooltip-text { visibility: visible; opacity: 1; bottom: 110%; }
+        .info-tooltip-container:active .info-tooltip-text,
+        .info-tooltip-container:focus .info-tooltip-text { 
+            visibility: visible; 
+            opacity: 1; 
+            bottom: 110%; 
+        }
 
         h1, h2, h3, .menu-item, .section-header {
             font-family: 'Fredoka', sans-serif;
@@ -139,11 +162,11 @@
 
         /* --- Main Layout Grid --- */
         .layout-container {
-            max-width: 1000px; /* Reduced slightly */
+            max-width: 1000px; 
             width: 100%;
             display: grid;
             grid-template-columns: 260px 1fr;
-            gap: 15px; /* Reduced */
+            gap: 15px; 
             position: relative;
         }
 
@@ -153,11 +176,11 @@
             display: flex;
             gap: 15px;
             align-items: flex-end;
-            margin-bottom: 5px; /* Reduced */
+            margin-bottom: 5px; 
         }
 
         .mascot-container {
-            width: 80px; /* Reduced from 100px */
+            width: 80px; 
             height: 80px;
             background: var(--panel-light);
             border: 4px solid var(--border-orange);
@@ -202,7 +225,6 @@
             align-items: center;
         }
 
-        /* Perfectly flush speech bubble tail using rotated square */
         .speech-bubble::before {
             content: '';
             position: absolute;
@@ -231,10 +253,9 @@
             border: 5px solid var(--border-orange);
             border-radius: 20px;
             box-shadow: inset 0 0 15px rgba(0,0,0,0.4), 0 10px 20px rgba(0,0,0,0.4);
-            padding: 15px; /* Reduced from 20px to save height */
+            padding: 15px; 
         }
 
-        /* Sidebar specific styling to push status to bottom */
         .sidebar-panel {
             display: flex; 
             flex-direction: column;
@@ -251,7 +272,7 @@
         .menu-item {
             display: flex;
             align-items: center;
-            padding: 10px 16px; /* Condensed */
+            padding: 10px 16px; 
             cursor: pointer;
             border-radius: 25px;
             background: rgba(0,0,0,0.3);
@@ -268,7 +289,6 @@
             color: var(--highlight-yellow);
         }
 
-        /* Normal hover state (ignores active and under-construction buttons) */
         .menu-item:not(.active):not(.under-construction):hover {
             background: rgba(0,0,0,0.5);
             transform: scale(1.02);
@@ -289,7 +309,6 @@
 
         .menu-item.active .material-icons { color: var(--text-dark); }
 
-        /* Construction Tape Style for Empty Shop */
         .menu-item.under-construction {
             position: relative;
             overflow: hidden;
@@ -321,7 +340,7 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.6);
         }
 
-        /* Status Area (Rings/Gold) */
+        /* Status Area */
         .status-area {
             margin-top: 15px; 
             background: rgba(0,0,0,0.4);
@@ -341,23 +360,7 @@
         .status-row:last-child { margin-bottom: 0; }
 
         .status-label { color: #cbd5e0; }
-        .status-gold { 
-            color: var(--highlight-yellow); 
-            font-size: 1.1rem;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            cursor: pointer;
-            user-select: none;
-            transition: transform 0.1s;
-            position: relative;
-        }
-
-        .status-gold:active {
-            transform: scale(0.95);
-        }
-
-        /* Link hover effect for Network */
+        
         .network-link {
             color: #fff; 
             font-weight: bold; 
@@ -390,9 +393,9 @@
         }
 
         .section-header {
-            font-size: 1.3rem; /* Reduced to save space */
+            font-size: 1.3rem; 
             color: var(--highlight-yellow);
-            margin-bottom: 15px; /* Reduced */
+            margin-bottom: 15px; 
             display: flex;
             align-items: center;
             text-shadow: 2px 2px 0px rgba(0,0,0,0.5);
@@ -405,12 +408,12 @@
         .section-header .material-icons { margin-right: 10px; font-size: 26px; }
 
         /* Custom Form Inputs */
-        .form-group { margin-bottom: 12px; } /* Condensed */
+        .form-group { margin-bottom: 12px; } 
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
         label {
             display: block;
-            margin-bottom: 4px; /* Condensed */
+            margin-bottom: 4px; 
             font-size: 0.95rem;
             font-weight: 700;
             color: #fff;
@@ -423,7 +426,7 @@
             border: 3px solid #cbd5e0;
             border-radius: 10px;
             color: var(--text-dark);
-            padding: 8px 12px; /* Condensed */
+            padding: 8px 12px; 
             font-family: 'Nunito', sans-serif;
             font-size: 0.95rem;
             font-weight: 600;
@@ -438,9 +441,50 @@
             box-shadow: 0 0 0 4px rgba(255, 157, 0, 0.3);
         }
 
+        /* Generated Lists inside forms */
+        .added-list-container {
+            background: rgba(0,0,0,0.3);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            display: none; /* hidden when empty */
+            box-shadow: inset 0 3px 6px rgba(0,0,0,0.3);
+            transition: background 0.3s;
+        }
+
+        .added-list-header {
+            color: var(--highlight-yellow);
+            font-family: 'Fredoka', sans-serif;
+            margin-bottom: 8px;
+            font-size: 1.05rem;
+            border-bottom: 1px dashed rgba(255,255,255,0.2);
+            padding-bottom: 4px;
+        }
+
+        .added-list-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+            font-size: 0.9rem;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .added-list-item:last-child { border-bottom: none; }
+        
+        .added-list-item strong { color: #fff; }
+        
+        .remove-btn {
+            color: var(--panel-red);
+            cursor: pointer;
+            font-size: 20px !important;
+            transition: 0.2s;
+        }
+        .remove-btn:hover { color: #ff4d4d; transform: scale(1.1); }
+
         /* Inventory Catalog styling */
         .catalog-wrapper {
-            max-height: 220px; /* Reduced to fix tall page issue */
+            max-height: 220px; 
             overflow-y: auto;
             overflow-x: hidden;
             padding-right: 8px;
@@ -528,7 +572,7 @@
             text-transform: uppercase;
             letter-spacing: 1px;
             text-shadow: 1px 1px 0 #000;
-            cursor: pointer; /* Makes it look clickable */
+            cursor: pointer; 
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -563,7 +607,7 @@
             background: linear-gradient(180deg, #63b3ed 0%, #3182ce 100%);
             border: 4px solid #fff;
             color: white;
-            padding: 10px 20px; /* Condensed */
+            padding: 10px 20px; 
             border-radius: 10px;
             font-size: 1.1rem;
             font-family: 'Fredoka', sans-serif;
@@ -578,6 +622,15 @@
             text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
             text-transform: uppercase;
             letter-spacing: 1px;
+        }
+
+        .btn-add {
+            font-size: 0.95rem;
+            padding: 8px 15px;
+            margin-top: 0;
+            margin-bottom: 15px;
+            background: linear-gradient(180deg, #b794f4 0%, #805ad5 100%);
+            border-width: 3px;
         }
 
         .btn-submit:hover { filter: brightness(1.1); transform: translateY(-2px); box-shadow: 0 7px 0px rgba(0,0,0,0.4); }
@@ -622,7 +675,7 @@
             .status-area { display: none; }
             .form-row { grid-template-columns: 1fr; gap: 0; }
             
-            .section-header { font-size: 1.2rem; padding: 8px; border-radius: 10px; justify-content: center; }
+            .section-header { font-size: 1.2rem; padding: 8px; border-radius: 10px; justify-content: center; text-align: center; }
             .section-header .material-icons { font-size: 22px; margin-right: 6px; }
             
             .catalog-grid { grid-template-columns: 1fr; }
@@ -662,7 +715,7 @@
             <div class="menu-item active" data-target="buy" data-desc="Looking for a specific classic? Let us know what you need!">
                 <i class="material-icons">shopping_cart</i> Buy Items
             </div>
-            <div class="menu-item" data-target="sell" data-desc="Have classics to offload? We pay top rings for rare gear!">
+            <div class="menu-item" data-target="sell" data-desc="Have classics to offload? We pay top gold for rare gear!">
                 <i class="material-icons">paid</i> Sell / Trade
             </div>
             <div class="menu-item" data-target="contact" data-desc="Got a question? Send us a message via the internet!">
@@ -712,22 +765,38 @@
             </div>
 
             <form onsubmit="handleMailto(event, 'buy')">
-                <div class="form-group">
-                    <label>Item / Game Title Request</label>
-                    <input type="text" id="buy-item" placeholder="e.g. Sonic Adventure 2: Battle or Shiny Orange Egg" required>
-                </div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Console / Era</label>
-                        <select id="buy-platform"></select>
+                        <label>Item / Game Title Request</label>
+                        <input type="text" id="buy-item-input" placeholder="e.g. Sonic Adventure 2 or Custom Request">
                     </div>
                     <div class="form-group">
-                        <label>Your Name</label>
-                        <input type="text" id="buy-name" required>
+                        <label>Console / Era</label>
+                        <select id="buy-platform-input"></select>
                     </div>
                 </div>
+                
+                <button type="button" class="btn-submit btn-add" onclick="addBuyItem()">
+                    <i class="material-icons" style="font-size: 20px; margin-right: 5px;">add_circle</i> Add to Request List
+                </button>
+
+                <!-- List Output Box -->
+                <div id="buy-list-container" class="added-list-container">
+                    <div class="added-list-header">Your Requested Items:</div>
+                    <div id="buy-list-items"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Additional Information (Optional)</label>
+                    <textarea id="buy-info" rows="2" placeholder="Any shipping details, condition preferences, or questions?"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Your Name</label>
+                    <input type="text" id="buy-name" required>
+                </div>
+                
                 <button type="submit" class="btn-submit btn-blue">
-                    <i class="material-icons">send</i> Submit Request
+                    <i class="material-icons">send</i> Send Request Email
                 </button>
             </form>
         </div>
@@ -735,8 +804,8 @@
         <!-- SELL SECTION -->
         <div id="view-sell" class="view-content">
             <div class="section-header">
-                <i class="material-icons" style="color: #68d391;">local_shipping</i> Sell or Trade Gear
-                <div class="info-tooltip-container">
+                <i class="material-icons" style="color: #68d391;">storefront</i> Sell or Trade Items
+                <div class="info-tooltip-container" tabindex="0">
                     <i class="material-icons animated-info-icon">stars</i>
                     <div class="info-tooltip-text">
                         <strong style="color: var(--panel-red-dark); font-family: 'Fredoka', sans-serif;">Actively Looking For:</strong><br>
@@ -750,20 +819,40 @@
             <form onsubmit="handleMailto(event, 'sell')">
                 <div class="form-group">
                     <label>Item Name & Condition</label>
-                    <input type="text" id="sell-item" placeholder="e.g. Halo 3 (CIB, Good Condition)" required>
+                    <input type="text" id="sell-item-input" placeholder="e.g. Halo 3 (CIB, Good Condition)">
                 </div>
                 <div class="form-row">
                     <div class="form-group">
                         <label>Category</label>
-                        <select id="sell-cat"></select>
+                        <select id="sell-cat-input"></select>
                     </div>
                     <div class="form-group">
                         <label>Desired Price / Trade</label>
-                        <input type="text" id="sell-price" placeholder="e.g. $50 or Trade for Pikmin">
+                        <input type="text" id="sell-price-input" placeholder="e.g. $50 or Trade for Pikmin">
                     </div>
                 </div>
+
+                <button type="button" class="btn-submit btn-add" onclick="addSellItem()">
+                    <i class="material-icons" style="font-size: 20px; margin-right: 5px;">add_circle</i> Add to Offer List
+                </button>
+
+                <!-- List Output Box -->
+                <div id="sell-list-container" class="added-list-container">
+                    <div class="added-list-header">Your Trade/Sell Offers:</div>
+                    <div id="sell-list-items"></div>
+                </div>
+
+                <div class="form-group">
+                    <label>Additional Information (Optional)</label>
+                    <textarea id="sell-info" rows="2" placeholder="Any history on these items, bundle deals, etc.?"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Your Name</label>
+                    <input type="text" id="sell-name" required>
+                </div>
+
                 <button type="submit" class="btn-submit btn-orange">
-                    <i class="material-icons">monetization_on</i> Send Offer
+                    <i class="material-icons">monetization_on</i> Send Offer Email
                 </button>
             </form>
         </div>
@@ -782,6 +871,10 @@
                     <label>Your Message</label>
                     <textarea id="msg-body" rows="4" placeholder="How can we help?" required></textarea>
                 </div>
+                <div class="form-group">
+                    <label>Your Name</label>
+                    <input type="text" id="msg-name" required>
+                </div>
                 <button type="submit" class="btn-submit btn-purple">
                     <i class="material-icons">send</i> Send Message
                 </button>
@@ -795,12 +888,15 @@
     // UPDATED STORE EMAIL
     const STORE_EMAIL = "ElementiumVHS@gmail.com";
 
+    // Item Cart Arrays
+    let buyItemsList = [];
+    let sellItemsList = [];
+
     $(document).ready(function() {
         
         // --- 1. POPULATE DROPDOWNS FROM ARRAYS ---
         buyConsoles.forEach(consoleName => {
-            $('#buy-platform').append(`<option value="${consoleName}">${consoleName}</option>`);
-            // Also populate the filter menu
+            $('#buy-platform-input').append(`<option value="${consoleName}">${consoleName}</option>`);
             $('#filter-checkboxes').append(`
                 <label class="filter-option">
                     <input type="checkbox" value="${consoleName}" class="cat-filter" checked> ${consoleName}
@@ -809,7 +905,7 @@
         });
 
         sellCategories.forEach(catName => {
-            $('#sell-cat').append(`<option value="${catName}">${catName}</option>`);
+            $('#sell-cat-input').append(`<option value="${catName}">${catName}</option>`);
         });
 
         // --- 2. INITIALIZE INVENTORY / CATALOG UI ---
@@ -830,15 +926,8 @@
             $('#catalog-ui').show();
             renderCatalog();
 
-            // Hook up Search Input Filter
-            $('#catalog-search').on('input', function() {
-                renderCatalog();
-            });
-
-            // Hook up Category Checkbox Filters
-            $('.cat-filter').on('change', function() {
-                renderCatalog();
-            });
+            $('#catalog-search').on('input', renderCatalog);
+            $('.cat-filter').on('change', renderCatalog);
         }
 
         // Toggle Filter Dropdown
@@ -878,31 +967,22 @@
         // Animated Walking Mascot Logic
         function walkMascotSequence() {
             const sprite = $('#walking-sprite');
-            // Adding a timestamp parameter forces the GIF to restart from Frame 1
             const timestamp = new Date().getTime(); 
             
-            // 1. Reset to start left of screen, walking
             sprite.attr('src', 'animations/mascot_walk.gif?t=' + timestamp);
             sprite.css({ left: '-100px' });
             
-            // 2. Walk to middle of screen
             sprite.animate({ left: '50%' }, 4000, 'linear', function() {
-                
-                // 3. Stop and wave (Force restart wave GIF)
                 const waveTimestamp = new Date().getTime();
                 sprite.attr('src', 'animations/mascot_wave.gif?t=' + waveTimestamp);
                 
-                // IMPORTANT: Adjust this number (1200) to match the EXACT length of your wave GIF in milliseconds 
-                // so it only plays exactly one time before walking away. (1000 = 1 second)
                 const waveDurationMs = 1200; 
                 
                 setTimeout(() => {
-                    // 4. Resume walking
                     const walkTimestamp = new Date().getTime();
                     sprite.attr('src', 'animations/mascot_walk.gif?t=' + walkTimestamp);
                     
                     sprite.animate({ left: '110%' }, 4000, 'linear', function() {
-                        // 5. Finished walking, hide until next loop. Random delay between 15s and 45s.
                         const nextAppearance = Math.floor(Math.random() * 30000) + 15000;
                         setTimeout(walkMascotSequence, nextAppearance); 
                     });
@@ -910,11 +990,92 @@
             });
         }
         
-        // Start the first mascot walk after a random initial delay (3 to 10 seconds)
         const initialDelay = Math.floor(Math.random() * 7000) + 3000;
         setTimeout(walkMascotSequence, initialDelay);
 
     });
+
+    // --- ITEM LIST LOGIC ---
+    function addBuyItem() {
+        const name = $('#buy-item-input').val().trim();
+        const platform = $('#buy-platform-input').val();
+        
+        if(!name) return; // Prevent empty adds
+        
+        buyItemsList.push({ name, platform });
+        $('#buy-item-input').val(''); // Clear input
+        renderBuyList();
+    }
+
+    function removeBuyItem(index) {
+        buyItemsList.splice(index, 1);
+        renderBuyList();
+    }
+
+    function renderBuyList() {
+        const container = $('#buy-list-container');
+        const listOutput = $('#buy-list-items');
+        
+        if(buyItemsList.length === 0) {
+            container.hide();
+            return;
+        }
+
+        container.show();
+        let html = '';
+        buyItemsList.forEach((item, i) => {
+            html += `
+            <div class="added-list-item">
+                <div><strong>${item.name}</strong> <span style="color:var(--text-system); font-size: 0.8rem;">(${item.platform})</span></div>
+                <i class="material-icons remove-btn" onclick="removeBuyItem(${i})">cancel</i>
+            </div>`;
+        });
+        listOutput.html(html);
+    }
+
+    function addSellItem() {
+        const name = $('#sell-item-input').val().trim();
+        const cat = $('#sell-cat-input').val();
+        const price = $('#sell-price-input').val().trim();
+        
+        if(!name) return; // Prevent empty adds
+        
+        sellItemsList.push({ name, cat, price: price || 'TBD' });
+        $('#sell-item-input').val(''); 
+        $('#sell-price-input').val(''); 
+        renderSellList();
+    }
+
+    function removeSellItem(index) {
+        sellItemsList.splice(index, 1);
+        renderSellList();
+    }
+
+    function renderSellList() {
+        const container = $('#sell-list-container');
+        const listOutput = $('#sell-list-items');
+        
+        if(sellItemsList.length === 0) {
+            container.hide();
+            return;
+        }
+
+        container.show();
+        let html = '';
+        sellItemsList.forEach((item, i) => {
+            html += `
+            <div class="added-list-item">
+                <div>
+                    <strong>${item.name}</strong> 
+                    <span style="color:var(--border-orange); font-size: 0.8rem;">[Asking: ${item.price}]</span><br>
+                    <span style="color:#cbd5e0; font-size: 0.75rem;">Category: ${item.cat}</span>
+                </div>
+                <i class="material-icons remove-btn" onclick="removeSellItem(${i})">cancel</i>
+            </div>`;
+        });
+        listOutput.html(html);
+    }
+
 
     // Toggle category collapse
     function toggleCategory(headerElement) {
@@ -932,26 +1093,28 @@
         }, 150);
     }
 
-    // When clicking a catalog item, auto-fill the form
+    // When clicking a catalog item, auto-fill AND ADD TO LIST
     function selectCatalogItem(name, platform) {
-        $('#buy-item').val(name);
-        $('#buy-platform').val(platform);
+        $('#buy-item-input').val(name);
+        $('#buy-platform-input').val(platform);
         
-        $('#buy-item').css('background', '#ffd900');
-        setTimeout(() => $('#buy-item').css('background', ''), 400);
+        // Instantly add to the request list for better UX
+        addBuyItem();
+
+        // Flash the list to show it was populated
+        $('#buy-list-container').css('background', 'rgba(255,217,0,0.3)');
+        setTimeout(() => $('#buy-list-container').css('background', ''), 400);
     }
 
     // Renders the catalog with text and checkbox filtering
     function renderCatalog() {
         const filterText = $('#catalog-search').val().toLowerCase();
         
-        // Get active console categories from checkboxes
         const activeConsoles = [];
         $('.cat-filter:checked').each(function() {
             activeConsoles.push($(this).val());
         });
         
-        // Filter array based on text search AND active checkboxes
         const filtered = storeInventory.filter(item => 
             activeConsoles.includes(item.console) &&
             (item.name.toLowerCase().includes(filterText) || item.console.toLowerCase().includes(filterText))
@@ -962,17 +1125,14 @@
             return;
         }
 
-        // Group items by console
         const grouped = {};
         filtered.forEach(item => {
             if(!grouped[item.console]) grouped[item.console] = [];
             grouped[item.console].push(item);
         });
 
-        // Build HTML
         let html = '';
         for(const [consoleName, items] of Object.entries(grouped)) {
-            // Added onclick for collapse functionality
             html += `<div class="catalog-group-header" onclick="toggleCategory(this)">
                         ${consoleName} 
                         <i class="material-icons">expand_more</i>
@@ -981,8 +1141,6 @@
             items.forEach(item => {
                 const safeName = item.name.replace(/'/g, "\\'");
                 const safeConsole = item.console.replace(/'/g, "\\'");
-                
-                // Formatted string to show Dollars plus S&H note
                 const formattedPrice = `$${item.price}`;
 
                 html += `
@@ -1013,34 +1171,86 @@
         let body = "";
 
         if (type === 'sell') {
-            const item = $('#sell-item').val();
-            const cat = $('#sell-cat').val();
-            const price = $('#sell-price').val();
-            subject = `[SELL] ${cat}: ${item}`;
-            body = `Item: ${item}\nCategory: ${cat}\nAsking Price / Trade: ${price}\n\nSent from Video Studio 20 Website.`;
+            // Auto-add if they typed something but forgot to hit the "+ Add" button
+            if($('#sell-item-input').val().trim() !== '') {
+                addSellItem();
+            }
+
+            if (sellItemsList.length === 0) {
+                alert("Please add at least one item to your offer list before sending!");
+                return;
+            }
+
+            const name = $('#sell-name').val();
+            const info = $('#sell-info').val().trim();
+            
+            subject = `[SELL/TRADE] Offer from ${name}`;
+            body = `Hello Video Studio 20,\n\nI have the following items for sale/trade:\n\n`;
+            
+            sellItemsList.forEach(item => {
+                body += `• ${item.name}\n  - Category: ${item.cat}\n  - Asking: ${item.price}\n\n`;
+            });
+
+            if (info) {
+                body += `Additional Information:\n${info}\n\n`;
+            }
+
+            // The requested condition visibility photo reminder
+            body += `*** PLEASE NOTE ***\nDon't forget to attach clear photos of the items (front, back, and any damage) to this email so we can verify their condition!\n\n`;
+            body += `Best regards,\n${name}`;
+
         } else if (type === 'buy') {
-            const item = $('#buy-item').val();
-            const platform = $('#buy-platform').val();
+            // Auto-add if they typed something but forgot to hit the "+ Add" button
+            if($('#buy-item-input').val().trim() !== '') {
+                addBuyItem();
+            }
+
+            if (buyItemsList.length === 0) {
+                alert("Please add at least one item to your request list before sending!");
+                return;
+            }
+
             const name = $('#buy-name').val();
-            subject = `[BUY] ${platform}: ${item}`;
-            body = `Request from: ${name}\nLooking for: ${item} on ${platform}\n\nPlease let me know if this is available!`;
+            const info = $('#buy-info').val().trim();
+            
+            subject = `[BUY REQUEST] Inquiry from ${name}`;
+            body = `Hello Video Studio 20,\n\nI am looking to purchase the following items:\n\n`;
+
+            buyItemsList.forEach(item => {
+                body += `• ${item.name} (${item.platform})\n`;
+            });
+
+            if (info) {
+                body += `\nAdditional Information:\n${info}\n`;
+            }
+
+            body += `\nPlease let me know if these are available and what the total is with shipping.\n\nBest regards,\n${name}`;
+
         } else if (type === 'contact') {
             const sub = $('#msg-subject').val();
             const msg = $('#msg-body').val();
+            const name = $('#msg-name').val();
             subject = `[CONTACT] ${sub}`;
-            body = msg;
+            body = `${msg}\n\nBest regards,\n${name}`;
         }
 
         const mailtoUrl = `mailto:${STORE_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
         
         // Visual button feedback
-        const btn = $(event.target).find('.btn-submit');
+        const btn = $(event.target).find('button[type="submit"]');
         const oldHtml = btn.html();
         btn.html('<i class="material-icons">sync</i> Opening Email...').css('opacity', '0.8');
         
         setTimeout(() => {
             window.open(mailtoUrl, 'mailPopup', 'width=600,height=600,noopener,noreferrer');
             btn.html(oldHtml).css('opacity', '1');
+            
+            // Clear arrays and update UI after a successful send attempt
+            buyItemsList = [];
+            sellItemsList = [];
+            renderBuyList();
+            renderSellList();
+            event.target.reset(); // clears the other text fields
         }, 800);
     }
 </script>
