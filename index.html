@@ -28,13 +28,14 @@
         // 3. EDIT INVENTORY ARRAY HERE
         // Note: Make sure the 'console' matches exactly one of the buyConsoles above!
         // Price should just be the number. It will format automatically.
+        // Add a 'stock' value to allow users to add multiples of the same item!
         const storeInventory = [
-            { name: "Sonic Adventure 2: Battle", console: "GameCube", price: 45 },
-            { name: "Pikmin 2", console: "GameCube", price: 60 },
-            { name: "Halo 3", console: "Xbox 360", price: 20 },
-            { name: "Sonic the Hedgehog 2", console: "Sega Genesis", price: 25 },
-            { name: "Pokemon Blue", console: "Gameboy", price: 55 },
-            { name: "The Matrix", console: "VHS Tapes", price: 5 }
+            { name: "Sonic Adventure 2: Battle", console: "GameCube", price: 45, stock: 1 },
+            { name: "Pikmin 2", console: "GameCube", price: 60, stock: 2 },
+            { name: "Halo 3", console: "Xbox 360", price: 20, stock: 1 },
+            { name: "Sonic the Hedgehog 2", console: "Sega Genesis", price: 25, stock: 1 },
+            { name: "Pokemon Blue", console: "Gameboy", price: 55, stock: 1 },
+            { name: "The Matrix", console: "VHS Tapes", price: 5, stock: 3 }
         ]; 
     </script>
 
@@ -441,6 +442,15 @@
             box-shadow: 0 0 0 4px rgba(255, 157, 0, 0.3);
         }
 
+        /* Readonly inputs */
+        input[readonly] {
+            background: rgba(0,0,0,0.2) !important;
+            color: #a0aec0 !important;
+            cursor: not-allowed;
+            border-color: rgba(255,255,255,0.1);
+            box-shadow: none;
+        }
+
         /* Generated Lists inside forms */
         .added-list-container {
             background: rgba(0,0,0,0.3);
@@ -483,6 +493,31 @@
         .remove-btn:hover { color: #ff4d4d; transform: scale(1.1); }
 
         /* Inventory Catalog styling */
+        .catalog-notes {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+
+        .instruction-note {
+            color: #68d391;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .shipping-note {
+            color: var(--highlight-yellow);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 4px;
+        }
+
         .catalog-wrapper {
             max-height: 220px; 
             overflow-y: auto;
@@ -583,23 +618,55 @@
         .catalog-group-header.collapsed .material-icons { transform: rotate(-90deg); }
 
         .catalog-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-        .catalog-item { background: rgba(0,0,0,0.4); border: 2px solid rgba(255,255,255,0.2); padding: 10px; border-radius: 10px; cursor: pointer; transition: 0.2s; }
+        .catalog-item { position: relative; background: rgba(0,0,0,0.4); border: 2px solid rgba(255,255,255,0.2); padding: 10px; border-radius: 10px; cursor: pointer; transition: 0.2s; overflow: hidden; }
         .catalog-item:hover { background: rgba(0,0,0,0.6); border-color: var(--highlight-yellow); transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.4); }
         .inv-name { font-weight: bold; font-family: 'Fredoka', sans-serif; color: #fff; font-size: 1rem; text-shadow: 1px 1px 0 #000; margin-bottom: 2px; }
         .inv-details { display: flex; flex-direction: column; gap: 2px; font-size: 0.8rem; color: #cbd5e0; }
         .inv-price { color: var(--highlight-yellow); font-weight: bold; font-size: 0.85rem;}
 
-        .shipping-note {
-            text-align: right;
-            font-size: 0.85rem;
-            color: var(--highlight-yellow);
-            margin-bottom: 8px;
-            font-weight: 600;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        /* Maxed / Added to cart styles */
+        .catalog-item.item-maxed {
+            border-color: var(--highlight-yellow) !important;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5) !important;
+        }
+        
+        .maxed-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(2px);
             display: flex;
             align-items: center;
-            justify-content: flex-end;
-            gap: 4px;
+            justify-content: center;
+            z-index: 10;
+            border-radius: 8px;
+        }
+
+        .maxed-badge {
+            background: var(--highlight-yellow);
+            color: var(--text-dark);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.6);
+            transform: rotate(-5deg);
+            border: 2px solid #fff;
+            letter-spacing: 0.5px;
+            text-shadow: none;
+        }
+
+        .maxed-badge .material-icons {
+            font-size: 20px !important;
+            color: var(--text-dark) !important;
+            text-shadow: none !important;
+            margin: 0;
         }
 
         /* --- Dreamcast/SA2 Style Arcade Button --- */
@@ -679,6 +746,15 @@
             .section-header .material-icons { font-size: 22px; margin-right: 6px; }
             
             .catalog-grid { grid-template-columns: 1fr; }
+            
+            .catalog-notes {
+                flex-direction: column;
+                gap: 5px;
+                text-align: center;
+            }
+            .instruction-note, .shipping-note {
+                justify-content: center;
+            }
 
             /* Mobile Tooltip Adjustment */
             .info-tooltip-text { width: 200px; left: auto; right: -50px; transform: none; }
@@ -757,7 +833,10 @@
                     </div>
                 </div>
                 
-                <div class="shipping-note"><i class="material-icons" style="font-size: 16px;">info</i> Prices exclude Standard S&H. Local pickup available.</div>
+                <div class="catalog-notes">
+                    <div class="instruction-note"><i class="material-icons" style="font-size: 16px;">touch_app</i> Click/Tap items to add to request list</div>
+                    <div class="shipping-note"><i class="material-icons" style="font-size: 16px;">info</i> Prices exclude Standard S&H. Local pickup available.</div>
+                </div>
 
                 <div class="catalog-wrapper">
                     <div id="buy-catalog"></div>
@@ -765,21 +844,6 @@
             </div>
 
             <form onsubmit="handleMailto(event, 'buy')">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Item / Game Title Request</label>
-                        <input type="text" id="buy-item-input" placeholder="e.g. Sonic Adventure 2 or Custom Request">
-                    </div>
-                    <div class="form-group">
-                        <label>Console / Era</label>
-                        <select id="buy-platform-input"></select>
-                    </div>
-                </div>
-                
-                <button type="button" class="btn-submit btn-add" onclick="addBuyItem()">
-                    <i class="material-icons" style="font-size: 20px; margin-right: 5px;">add_circle</i> Add to Request List
-                </button>
-
                 <!-- List Output Box -->
                 <div id="buy-list-container" class="added-list-container">
                     <div class="added-list-header">Your Requested Items:</div>
@@ -896,7 +960,7 @@
         
         // --- 1. POPULATE DROPDOWNS FROM ARRAYS ---
         buyConsoles.forEach(consoleName => {
-            $('#buy-platform-input').append(`<option value="${consoleName}">${consoleName}</option>`);
+            // Also populate the filter menu
             $('#filter-checkboxes').append(`
                 <label class="filter-option">
                     <input type="checkbox" value="${consoleName}" class="cat-filter" checked> ${consoleName}
@@ -996,20 +1060,10 @@
     });
 
     // --- ITEM LIST LOGIC ---
-    function addBuyItem() {
-        const name = $('#buy-item-input').val().trim();
-        const platform = $('#buy-platform-input').val();
-        
-        if(!name) return; // Prevent empty adds
-        
-        buyItemsList.push({ name, platform });
-        $('#buy-item-input').val(''); // Clear input
-        renderBuyList();
-    }
-
     function removeBuyItem(index) {
         buyItemsList.splice(index, 1);
         renderBuyList();
+        renderCatalog(); // Re-render to un-max the catalog item!
     }
 
     function renderBuyList() {
@@ -1023,13 +1077,31 @@
 
         container.show();
         let html = '';
+        let total = 0;
+        
         buyItemsList.forEach((item, i) => {
+            const itemTotal = item.price * item.quantity;
+            total += itemTotal;
             html += `
             <div class="added-list-item">
-                <div><strong>${item.name}</strong> <span style="color:var(--text-system); font-size: 0.8rem;">(${item.platform})</span></div>
+                <div>
+                    <strong>${item.name}</strong> <span style="color:#cbd5e0; font-size: 0.8rem;">(${item.platform})</span>
+                    <span style="color: #68d391; font-weight:bold; font-size:0.95rem; margin-left: 5px;">x${item.quantity}</span>
+                    <div style="color:var(--highlight-yellow); font-weight: bold; font-size: 0.85rem;">$${itemTotal}</div>
+                </div>
                 <i class="material-icons remove-btn" onclick="removeBuyItem(${i})">cancel</i>
             </div>`;
         });
+        
+        // Add Total Row
+        html += `
+        <div class="added-list-item" style="border-top: 2px dashed rgba(255,255,255,0.2); margin-top: 8px; padding-top: 10px;">
+            <div style="font-family: 'Fredoka', sans-serif; font-size: 1.1rem; color: #fff;">Estimated Total:</div>
+            <div style="color:var(--highlight-yellow); font-family: 'Fredoka', sans-serif; font-size: 1.1rem; font-weight: bold;">
+                $${total} <span style="font-size: 0.75rem; font-weight: normal; color: #a0aec0;">+ S&H</span>
+            </div>
+        </div>`;
+        
         listOutput.html(html);
     }
 
@@ -1076,7 +1148,6 @@
         listOutput.html(html);
     }
 
-
     // Toggle category collapse
     function toggleCategory(headerElement) {
         $(headerElement).toggleClass('collapsed');
@@ -1093,17 +1164,27 @@
         }, 150);
     }
 
-    // When clicking a catalog item, auto-fill AND ADD TO LIST
-    function selectCatalogItem(name, platform) {
-        $('#buy-item-input').val(name);
-        $('#buy-platform-input').val(platform);
+    // When clicking a catalog item, ADD TO LIST directly
+    function selectCatalogItem(name, platform, price, stock) {
+        // Check if item is already in list
+        const existingItem = buyItemsList.find(i => i.name === name);
+
+        if (existingItem) {
+            if (existingItem.quantity >= stock) {
+                // Should not happen if overlay blocks click, but safe fallback
+                return;
+            }
+            existingItem.quantity += 1;
+        } else {
+            buyItemsList.push({ name, platform, price, stock, quantity: 1 });
+        }
         
-        // Instantly add to the request list for better UX
-        addBuyItem();
+        renderBuyList();
+        renderCatalog(); // Re-render to show maxed overlays
 
         // Flash the list to show it was populated
         $('#buy-list-container').css('background', 'rgba(255,217,0,0.3)');
-        setTimeout(() => $('#buy-list-container').css('background', ''), 400);
+        setTimeout(() => $('#buy-list-container').css('background', 'rgba(0,0,0,0.3)'), 400);
     }
 
     // Renders the catalog with text and checkbox filtering
@@ -1142,9 +1223,20 @@
                 const safeName = item.name.replace(/'/g, "\\'");
                 const safeConsole = item.console.replace(/'/g, "\\'");
                 const formattedPrice = `$${item.price}`;
+                const safeStock = item.stock || 1; // Default to 1 if not set
+
+                // Check if user has maxed out this item in their cart
+                const inCartItem = buyItemsList.find(i => i.name === item.name);
+                const inCartQty = inCartItem ? inCartItem.quantity : 0;
+                const isMaxed = inCartQty >= safeStock;
+
+                const maxedClass = isMaxed ? "item-maxed" : "";
+                const maxedOverlay = isMaxed ? `<div class="maxed-overlay"><div class="maxed-badge"><i class="material-icons">shopping_basket</i> IN CART</div></div>` : "";
+                const clickHandler = isMaxed ? "" : `onclick="selectCatalogItem('${safeName}', '${safeConsole}', ${item.price}, ${safeStock})"`;
 
                 html += `
-                <div class="catalog-item" onclick="selectCatalogItem('${safeName}', '${safeConsole}')">
+                <div class="catalog-item ${maxedClass}" ${clickHandler}>
+                    ${maxedOverlay}
                     <div class="inv-name">${item.name}</div>
                     <div class="inv-details">
                         <span class="inv-price">${formattedPrice}</span>
@@ -1200,13 +1292,8 @@
             body += `Best regards,\n${name}`;
 
         } else if (type === 'buy') {
-            // Auto-add if they typed something but forgot to hit the "+ Add" button
-            if($('#buy-item-input').val().trim() !== '') {
-                addBuyItem();
-            }
-
             if (buyItemsList.length === 0) {
-                alert("Please add at least one item to your request list before sending!");
+                alert("Please click/tap an item from the catalog to add it to your request list before sending!");
                 return;
             }
 
@@ -1216,15 +1303,20 @@
             subject = `[BUY REQUEST] Inquiry from ${name}`;
             body = `Hello Video Studio 20,\n\nI am looking to purchase the following items:\n\n`;
 
+            let total = 0;
             buyItemsList.forEach(item => {
-                body += `• ${item.name} (${item.platform})\n`;
+                const itemTotal = item.price * item.quantity;
+                total += itemTotal;
+                body += `• ${item.name} (${item.platform}) - $${item.price} x ${item.quantity} = $${itemTotal}\n`;
             });
+
+            body += `\nEstimated Subtotal: $${total} (+ S&H)\n`;
 
             if (info) {
                 body += `\nAdditional Information:\n${info}\n`;
             }
 
-            body += `\nPlease let me know if these are available and what the total is with shipping.\n\nBest regards,\n${name}`;
+            body += `\nPlease let me know if these are available and what the final total is with shipping.\n\nBest regards,\n${name}`;
 
         } else if (type === 'contact') {
             const sub = $('#msg-subject').val();
