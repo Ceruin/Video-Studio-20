@@ -357,27 +357,6 @@
             transform: scale(0.95);
         }
 
-        /* Floating +1 Rings Animation */
-        .ring-float {
-            position: absolute;
-            color: var(--highlight-yellow);
-            font-size: 1.2rem;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 2px;
-            animation: floatUp 0.8s ease-out forwards;
-            pointer-events: none;
-            z-index: 10;
-            text-shadow: 1px 1px 0px #000;
-        }
-        .ring-float .material-icons { font-size: 16px; }
-
-        @keyframes floatUp {
-            0% { opacity: 1; transform: translateY(0) scale(1); }
-            100% { opacity: 0; transform: translateY(-35px) scale(1.5); }
-        }
-
         /* Link hover effect for Network */
         .network-link {
             color: #fff; 
@@ -568,10 +547,15 @@
 
         .shipping-note {
             text-align: right;
-            font-size: 0.75rem;
-            color: #a0aec0;
-            margin-top: 5px;
-            font-style: italic;
+            font-size: 0.85rem;
+            color: var(--highlight-yellow);
+            margin-bottom: 8px;
+            font-weight: 600;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 4px;
         }
 
         /* --- Dreamcast/SA2 Style Arcade Button --- */
@@ -691,12 +675,6 @@
                 <span class="status-label">Network:</span>
                 <a href="#" onclick="openNetworkEmail(event)" class="network-link">Video Studio 20</a>
             </div>
-            <div class="status-row">
-                <span class="status-label">Rings:</span>
-                <span class="status-gold" id="rings-counter">
-                    <i class="material-icons" style="font-size:18px;">stars</i> <span id="ring-num">99,999</span>
-                </span>
-            </div>
         </div>
     </div>
 
@@ -725,9 +703,11 @@
                         <div id="filter-checkboxes"></div>
                     </div>
                 </div>
+                
+                <div class="shipping-note"><i class="material-icons" style="font-size: 16px;">info</i> Prices exclude Standard S&H. Local pickup available.</div>
+
                 <div class="catalog-wrapper">
                     <div id="buy-catalog"></div>
-                    <div class="shipping-note">* Prices exclude Standard Shipping & Handling. Local pickup available.</div>
                 </div>
             </div>
 
@@ -895,20 +875,6 @@
             $(`#view-${target}`).addClass('active');
         });
 
-        // Clickable Rings Easter Egg Logic
-        let ringCount = 99999;
-        $('#rings-counter').on('click', function(e) {
-            ringCount++;
-            $('#ring-num').text(ringCount.toLocaleString());
-            
-            const floater = $('<div class="ring-float">+1 <i class="material-icons">stars</i></div>');
-            const xOffset = Math.random() * 30 - 15;
-            floater.css({ left: `calc(50% + ${xOffset}px)`, top: '-10px' });
-            
-            $(this).append(floater);
-            setTimeout(() => floater.remove(), 800);
-        });
-
         // Animated Walking Mascot Logic
         function walkMascotSequence() {
             const sprite = $('#walking-sprite');
@@ -1016,8 +982,8 @@
                 const safeName = item.name.replace(/'/g, "\\'");
                 const safeConsole = item.console.replace(/'/g, "\\'");
                 
-                // Formatted string to show Rings and Dollars plus S&H note
-                const formattedPrice = `${item.price} Rings ($${item.price})`;
+                // Formatted string to show Dollars plus S&H note
+                const formattedPrice = `$${item.price}`;
 
                 html += `
                 <div class="catalog-item" onclick="selectCatalogItem('${safeName}', '${safeConsole}')">
