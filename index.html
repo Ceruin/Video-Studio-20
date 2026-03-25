@@ -17,12 +17,12 @@
         // 1. EDIT BUY CONSOLES / ERAS HERE
         const buyConsoles = [
             "GameCube", "Xbox 360", "Sega Genesis", 
-            "Nintendo 64", "Gameboy", "VHS Tapes", "Other / Unsure"
+            "Nintendo 64", "Gameboy", "VHS", "Other / Unsure"
         ];
 
         // 2. EDIT SELL CATEGORIES HERE
         const sellCategories = [
-            "Video Games", "VHS Tapes", "Comics (Sonic, etc.)", "Consoles / Hardware"
+            "VHS", "Video Games", "Comics", "Consoles"
         ];
 
         // 3. EDIT INVENTORY ARRAY HERE
@@ -30,7 +30,7 @@
         // Price should just be the number. It will format automatically.
         // Add a 'stock' value to allow users to add multiples of the same item!
         const storeInventory = [
-            
+
         ]; 
     </script>
 
@@ -68,11 +68,6 @@
             padding: 10px;
             overflow-x: hidden;
             position: relative;
-        }
-
-        img {
-            image-rendering: auto; /* The default, which applies smooth interpolation */
-            image-rendering: high-quality; /* Supported by some browsers to force better downsampling */
         }
 
         /* --- SA2/Dreamcast Passive Background Animations --- */
@@ -805,7 +800,7 @@
             <img src="images/mascot.png" alt="Video Studio 20 Mascot" id="mascot-img">
         </div>
         <div class="speech-bubble" id="desc-text">
-            "Welcome to Video Studio 20! Take a look at our rare items!"
+            "Welcome to Video Studio 20!"
         </div>
     </div>
 
@@ -815,8 +810,8 @@
             <div class="menu-item active" data-target="buy" data-desc="Looking for a specific classic? Let us know what you need!">
                 <i class="material-icons">shopping_cart</i> Buy Items
             </div>
-            <div class="menu-item" data-target="sell" data-desc="Have classics to offload? We pay top gold for rare gear!">
-                <i class="material-icons">paid</i> Sell / Trade
+            <div class="menu-item" data-target="sell" data-desc="Have classics to offload? Let us take a look!">
+                <i class="material-icons">paid</i> Sell
             </div>
             <div class="menu-item" data-target="contact" data-desc="Got a question? Send us a message via the internet!">
                 <i class="material-icons">email</i> Contact
@@ -892,13 +887,13 @@
         <!-- SELL SECTION -->
         <div id="view-sell" class="view-content">
             <div class="section-header">
-                <i class="material-icons" style="color: #68d391;">storefront</i> Sell or Trade Items
+                <i class="material-icons" style="color: #68d391;">storefront</i> Sell Items
                 <div class="info-tooltip-container" tabindex="0">
                     <i class="material-icons animated-info-icon">stars</i>
                     <div class="info-tooltip-text">
                         <strong style="color: var(--panel-red-dark); font-family: 'Fredoka', sans-serif;">Actively Looking For:</strong><br>
                         <hr style="border: 1px dashed #cbd5e0; margin: 4px 0;">
-                        • VHS Tapes (Anime especially!)<br>
+                        • VHS (Anime especially!)<br>
                         • Gamecube Games<br>
                         • Sonic Comics (Archie/IDW)
                     </div>
@@ -1035,7 +1030,7 @@
         // --- 3. MENU NAVIGATION ---
         $('.menu-item').on('click', function() {
             if($(this).hasClass('under-construction')) {
-                updateBubble("BZZT! Area under construction! We have no items to sell right now.");
+                updateBubble("BZZT! Area under construction! We have nothing to sell right now.");
                 return; 
             }
 
