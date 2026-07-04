@@ -113,8 +113,8 @@
             pointer-events: none;
             user-select: none;
         }
-        .vcr-osd .blink { animation: osdBlink 1.4s steps(1) infinite; }
-        @keyframes osdBlink { 0%, 55% { opacity: 1; } 56%, 100% { opacity: 0; } }
+        .vcr-osd .colon { animation: osdBlink 2s steps(1) infinite; }
+        @keyframes osdBlink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
 
         /* --- Bottom "Be Kind Rewind" Ticker (the mascot walks along it) --- */
         .ticker {
@@ -135,6 +135,91 @@
             text-shadow: 1px 1px 0 #000;
         }
         @keyframes tickerScroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+        /* --- VHS Blue Screen Intro Splash (first visit only) --- */
+        .vhs-splash {
+            position: fixed; inset: 0; z-index: 2000;
+            background: #0806c8;
+            font-family: 'VT323', monospace;
+            color: #fff;
+            cursor: pointer;
+            user-select: none;
+        }
+        html.no-splash .vhs-splash { display: none; }
+
+        .vhs-splash::before {
+            content: ''; position: absolute; inset: 0; pointer-events: none;
+            background: repeating-linear-gradient(0deg, rgba(0,0,0,0.14) 0px, rgba(0,0,0,0.14) 1px, transparent 1px, transparent 3px);
+        }
+        .vhs-splash::after {
+            content: ''; position: absolute; inset: 0; pointer-events: none;
+            background: radial-gradient(ellipse at center, transparent 58%, rgba(0,0,0,0.4) 100%);
+        }
+
+        .splash-osd {
+            position: absolute; top: 22px;
+            font-size: clamp(1.3rem, 3vw, 1.8rem);
+            letter-spacing: 3px;
+            text-shadow: 2px 2px 0 rgba(0,0,0,0.6);
+            animation: splashFadeIn 0.2s 0.3s both;
+        }
+        .splash-play { left: 26px; }
+        .splash-sp { right: 26px; }
+
+        .splash-center {
+            position: absolute; inset: 0;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            gap: 10px;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .splash-title {
+            font-size: clamp(2.2rem, 9vw, 4.2rem);
+            letter-spacing: 6px;
+            /* VHS chroma fringing */
+            text-shadow: 3px 0 rgba(255, 0, 90, 0.55), -3px 0 rgba(0, 255, 255, 0.55), 2px 3px 0 rgba(0,0,0,0.5);
+            animation: splashFadeIn 0.25s 0.8s both;
+        }
+
+        .splash-sub {
+            font-size: clamp(1rem, 3.2vw, 1.4rem);
+            letter-spacing: 5px;
+            color: #cfd4ff;
+            text-shadow: 1px 1px 0 rgba(0,0,0,0.6);
+            animation: splashFadeIn 0.25s 1.2s both;
+        }
+
+        .splash-loading {
+            margin-top: 22px;
+            font-size: clamp(1rem, 2.6vw, 1.25rem);
+            letter-spacing: 3px;
+            animation: splashFadeIn 0.2s 1.6s both, osdBlink 1.3s 1.8s steps(1) infinite;
+        }
+
+        .splash-skip {
+            position: absolute; bottom: 20px; right: 26px;
+            font-size: 1rem;
+            letter-spacing: 2px;
+            opacity: 0;
+            animation: splashFadeInDim 0.3s 1.4s both;
+        }
+
+        @keyframes splashFadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes splashFadeInDim { from { opacity: 0; } to { opacity: 0.65; } }
+
+        /* Tracking-glitch wipe out */
+        .vhs-splash.splash-exit {
+            animation: splashOut 0.45s ease-in forwards;
+            pointer-events: none;
+        }
+        @keyframes splashOut {
+            0%   { opacity: 1; transform: none; filter: none; }
+            30%  { transform: skewX(-6deg) translateY(8px); filter: saturate(3) brightness(1.5); }
+            60%  { transform: skewX(4deg) translateY(-14px); opacity: 0.8; }
+            100% { opacity: 0; transform: translateY(-4%) skewX(-2deg); }
+        }
 
         /* --- Wanted Items Tooltip Animation & Style --- */
         @keyframes bounce-shake {
@@ -198,11 +283,9 @@
         /* --- Focus visibility (keyboard navigation) --- */
         .menu-item:focus-visible,
         .btn-submit:focus-visible,
-        .network-link:focus-visible,
         .link-quiet:focus-visible,
-        .photo-dropzone:focus-within,
-        .photo-download:focus-visible,
-        .photo-remove:focus-visible,
+        .site-tagline:focus-visible,
+        .video-modal-close:focus-visible,
         .info-tooltip-container:focus-visible {
             outline: 3px solid var(--highlight-yellow);
             outline-offset: 2px;
@@ -256,6 +339,12 @@
         }
 
         .site-tagline {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: none;
+            border: none;
+            cursor: pointer;
             font-family: 'Nunito', sans-serif;
             font-style: italic;
             font-weight: 700;
@@ -263,7 +352,49 @@
             color: var(--highlight-yellow);
             margin-top: 4px;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+            text-decoration: underline dotted;
+            text-underline-offset: 3px;
         }
+        .site-tagline:hover { color: #fff; }
+        .site-tagline .material-icons { font-size: 18px; }
+
+        /* --- YouTube popup (styled like the shop TV) --- */
+        .video-modal {
+            position: fixed; inset: 0; z-index: 1300;
+            display: flex; align-items: center; justify-content: center;
+            padding: 20px;
+        }
+        .video-modal[hidden] { display: none; }
+        .video-modal-backdrop {
+            position: absolute; inset: 0;
+            background: rgba(0, 0, 0, 0.75);
+        }
+        .video-modal-frame {
+            position: relative;
+            width: min(92vw, 800px);
+            padding: 12px;
+        }
+        .video-aspect {
+            aspect-ratio: 16 / 9;
+            width: 100%;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .video-aspect iframe { width: 100%; height: 100%; border: 0; display: block; }
+        .video-modal-close {
+            position: absolute;
+            top: -16px; right: -16px;
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            border: 3px solid #fff;
+            background: var(--panel-red-dark);
+            color: #fff;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+        }
+        .video-modal-close:hover { background: var(--panel-red); }
 
         /* --- Mascot & Speech Bubble Area --- */
         .header-area {
@@ -436,11 +567,6 @@
             font-weight: bold;
             font-family: 'Fredoka', sans-serif;
             letter-spacing: 0.5px;
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-        .network-link:hover {
-            color: var(--highlight-yellow);
         }
 
         /* --- Content Area --- */
@@ -627,70 +753,6 @@
             box-shadow: 0 0 0 4px rgba(255, 157, 0, 0.3);
         }
 
-        /* --- Photo Upload / Camera Capture --- */
-        .photo-dropzone {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            border: 3px dashed rgba(255,255,255,0.3);
-            border-radius: 12px;
-            padding: 16px;
-            cursor: pointer;
-            color: #fff;
-            font-weight: 700;
-            background: rgba(0,0,0,0.2);
-            transition: 0.2s;
-        }
-        .photo-dropzone:hover { background: rgba(0,0,0,0.35); border-color: var(--border-orange); }
-        .photo-dropzone .material-icons { color: var(--highlight-yellow); }
-
-        .photo-preview-list { margin-top: 10px; display: none; }
-
-        .photo-reminder {
-            font-size: 0.8rem;
-            color: var(--highlight-yellow);
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            margin-bottom: 8px;
-            font-weight: 600;
-            line-height: 1.4;
-        }
-
-        .photo-thumb-row { display: flex; flex-wrap: wrap; gap: 10px; }
-
-        .photo-thumb {
-            position: relative;
-            width: 80px;
-            height: 80px;
-            border-radius: 10px;
-            overflow: hidden;
-            border: 2px solid rgba(255,255,255,0.2);
-            flex-shrink: 0;
-        }
-
-        .photo-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; cursor: grab; }
-
-        .photo-download, .photo-remove {
-            position: absolute;
-            top: 3px;
-            background: rgba(0,0,0,0.65);
-            border: none;
-            color: #fff;
-            border-radius: 50%;
-            width: 22px; height: 22px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            padding: 0;
-        }
-        .photo-download { left: 3px; }
-        .photo-remove { right: 3px; }
-        .photo-download .material-icons, .photo-remove .material-icons { font-size: 14px; }
-        .photo-download:hover, .photo-remove:hover { background: var(--panel-red); }
-
         /* Dreamcast/SA2 Style Arcade Button */
         .btn-submit {
             background: linear-gradient(180deg, #63b3ed 0%, #3182ce 100%);
@@ -729,6 +791,7 @@
                 scroll-behavior: auto !important;
             }
             .tracking-band { display: none; }
+            .vhs-splash { display: none; }
         }
 
         /* Mobile Responsiveness */
@@ -780,11 +843,29 @@
             .info-tooltip-text::after { left: auto; right: 55px; }
         }
     </style>
+    <script>
+        // Returning visitors skip the VHS intro splash (cookie set after first view)
+        if (document.cookie.indexOf('vs20_seen_intro=1') !== -1) {
+            document.documentElement.classList.add('no-splash');
+        }
+    </script>
 </head>
 <body>
 
+<!-- VHS Blue Screen Intro (first visit only, click to skip) -->
+<div id="vhs-splash" class="vhs-splash" aria-hidden="true">
+    <div class="splash-osd splash-play">&#9654; PLAY</div>
+    <div class="splash-osd splash-sp">SP</div>
+    <div class="splash-center">
+        <div class="splash-title">VIDEO STUDIO 20</div>
+        <div class="splash-sub">NEW HOME FOR OLD MEDIA</div>
+        <div class="splash-loading">LOADING TAPE...</div>
+    </div>
+    <div class="splash-skip">CLICK TO SKIP &#9656;</div>
+</div>
+
 <!-- VCR On-Screen Display (decorative) -->
-<div class="vcr-osd" aria-hidden="true">&#9654; PLAY&nbsp;&nbsp;<span class="blink">12:00</span>&nbsp;SP</div>
+<div class="vcr-osd" aria-hidden="true">&#9654; PLAY&nbsp;&nbsp;<span id="vcr-clock">12<span class="colon">:</span>00 AM</span>&nbsp;SP</div>
 
 <!-- Animated Walking Mascot (walks along the rewind ticker) -->
 <img id="walking-sprite" src="animations/mascot_walk.gif" alt="" style="position: fixed; bottom: 28px; left: -100px; height: 55px; z-index: 999; pointer-events: none; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.5));">
@@ -810,7 +891,10 @@
             Video Studio 20
         </h1>
         <p class="site-subline" aria-hidden="true">VHS &#9733; RETRO GAMES &#9733; COMICS</p>
-        <p class="site-tagline">&ldquo;New home for old media &mdash; since the tape era.&rdquo;</p>
+        <button type="button" class="site-tagline" onclick="openVideoModal()" aria-haspopup="dialog" title="Play the music video">
+            &ldquo;Physical killed the Digital star.&rdquo;
+            <i class="material-icons" aria-hidden="true">play_circle</i>
+        </button>
     </div>
 
     <!-- Top Mascot & Speech Bubble -->
@@ -830,7 +914,7 @@
             <button type="button" class="menu-item" data-target="shop" data-desc="Everything on our shelves lives on eBay — browse, Buy It Now, or send an offer any time.">
                 <i class="material-icons" aria-hidden="true">storefront</i> Shop
             </button>
-            <button type="button" class="menu-item active" data-target="contact" data-desc="Got something to sell, trade, or ask about? Send us a message — attach a photo if it helps!" aria-current="true">
+            <button type="button" class="menu-item active" data-target="contact" data-desc="Got something to sell, trade, or ask about? Send us a message!" aria-current="true">
                 <i class="material-icons" aria-hidden="true">mail_outline</i> Contact
             </button>
         </nav>
@@ -838,7 +922,7 @@
         <div class="status-area">
             <div class="status-row">
                 <span class="status-label">Network:</span>
-                <a href="#" onclick="openNetworkEmail(event)" class="network-link">Video Studio 20</a>
+                <span class="network-link">Video Studio 20</span>
             </div>
         </div>
     </div>
@@ -902,16 +986,6 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="contact-photo">Attach a Photo (Optional)</label>
-                    <label class="photo-dropzone" for="contact-photo">
-                        <i class="material-icons" aria-hidden="true">add_a_photo</i>
-                        <span>Tap to upload or take a photo</span>
-                    </label>
-                    <input type="file" id="contact-photo" accept="image/*" capture="environment" multiple hidden>
-                    <div id="photo-preview-list" class="photo-preview-list" aria-live="polite"></div>
-                </div>
-
-                <div class="form-group">
                     <label for="msg-name">Your Name</label>
                     <input type="text" id="msg-name" required>
                 </div>
@@ -921,6 +995,20 @@
             </form>
         </div>
 
+    </div>
+</div>
+
+<!-- YouTube popup: The Buggles — Video Killed the Radio Star -->
+<div id="video-modal" class="video-modal" role="dialog" aria-modal="true" aria-label="Music video: Video Killed the Radio Star" hidden>
+    <div class="video-modal-backdrop" onclick="closeVideoModal()"></div>
+    <div class="video-modal-frame gc-panel">
+        <button type="button" class="video-modal-close" onclick="closeVideoModal()" aria-label="Close video">
+            <i class="material-icons" aria-hidden="true">close</i>
+        </button>
+        <div class="video-aspect">
+            <iframe id="video-modal-iframe" src="" title="Video Killed the Radio Star — The Buggles"
+                    allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>
+        </div>
     </div>
 </div>
 
@@ -935,13 +1023,35 @@
 <script>
     // UPDATED STORE EMAIL
     const STORE_EMAIL = "ElementiumVHS@gmail.com";
-    const MAX_PHOTOS = 3;
-    const MAX_PHOTO_BYTES = 8 * 1024 * 1024; // 8MB
-
-    // Photos attached in the Contact form: [{ file, url }]
-    let contactPhotos = [];
 
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // --- VHS INTRO SPLASH (first visit only) ---
+    (function() {
+        const splash = document.getElementById('vhs-splash');
+        if (!splash) return;
+
+        function markIntroSeen() {
+            document.cookie = 'vs20_seen_intro=1; max-age=31536000; path=/; samesite=lax';
+        }
+
+        // Returning visitors (splash already display:none) and reduced-motion users skip it
+        if (document.documentElement.classList.contains('no-splash') || prefersReducedMotion) {
+            splash.remove();
+            markIntroSeen();
+            return;
+        }
+
+        function dismissSplash() {
+            if (splash.classList.contains('splash-exit')) return;
+            markIntroSeen();
+            splash.classList.add('splash-exit');
+            setTimeout(() => splash.remove(), 500);
+        }
+
+        splash.addEventListener('click', dismissSplash);
+        setTimeout(dismissSplash, 3400);
+    })();
 
     $(document).ready(function() {
 
@@ -960,24 +1070,17 @@
             $(`#view-${target}`).addClass('active');
         });
 
-        // --- PHOTO UPLOAD / CAMERA CAPTURE ---
-        $('#contact-photo').on('change', function(e) {
-            const files = Array.from(e.target.files || []);
-
-            files.forEach(file => {
-                if (contactPhotos.length >= MAX_PHOTOS) {
-                    return;
-                }
-                if (file.size > MAX_PHOTO_BYTES) {
-                    alert(`"${file.name}" is larger than 8MB — please choose a smaller photo.`);
-                    return;
-                }
-                contactPhotos.push({ file, url: URL.createObjectURL(file) });
-            });
-
-            e.target.value = ''; // allow re-selecting the same file later
-            renderPhotoPreviews();
-        });
+        // --- VCR CLOCK (top-left OSD shows the real time) ---
+        function updateVcrClock() {
+            const now = new Date();
+            let h = now.getHours() % 12;
+            if (h === 0) h = 12;
+            const m = String(now.getMinutes()).padStart(2, '0');
+            const ampm = now.getHours() < 12 ? 'AM' : 'PM';
+            $('#vcr-clock').html(`${h}<span class="colon">:</span>${m} ${ampm}`);
+        }
+        updateVcrClock();
+        setInterval(updateVcrClock, 15000);
 
         // Animated Walking Mascot Logic
         function walkMascotSequence() {
@@ -1030,58 +1133,26 @@
         $('.menu-item[data-target="contact"]').trigger('click');
     }
 
-    // Renders the photo thumbnail previews with download/remove controls
-    function renderPhotoPreviews() {
-        const list = $('#photo-preview-list');
+    // --- YouTube popup (tagline easter egg) ---
+    const VIDEO_EMBED_URL = 'https://www.youtube-nocookie.com/embed/W8r-tXRLazs?autoplay=1';
 
-        if (contactPhotos.length === 0) {
-            list.hide().empty();
-            return;
-        }
-
-        let html = `<p class="photo-reminder"><i class="material-icons" style="font-size:16px;" aria-hidden="true">info</i> Emails can't auto-attach photos — drag one into your email window, or download it first.</p>`;
-        html += '<div class="photo-thumb-row">';
-
-        contactPhotos.forEach((p, i) => {
-            html += `
-            <div class="photo-thumb">
-                <img src="${p.url}" alt="Attached photo preview ${i + 1}" draggable="true">
-                <button type="button" class="photo-download" onclick="downloadContactPhoto(${i})" aria-label="Download photo ${i + 1} to attach manually">
-                    <i class="material-icons" aria-hidden="true">download</i>
-                </button>
-                <button type="button" class="photo-remove" onclick="removeContactPhoto(${i})" aria-label="Remove photo ${i + 1}">
-                    <i class="material-icons" aria-hidden="true">close</i>
-                </button>
-            </div>`;
-        });
-
-        html += '</div>';
-        list.html(html).show();
+    function openVideoModal() {
+        document.getElementById('video-modal-iframe').src = VIDEO_EMBED_URL;
+        document.getElementById('video-modal').hidden = false;
+        document.querySelector('.video-modal-close').focus();
     }
 
-    function downloadContactPhoto(index) {
-        const photo = contactPhotos[index];
-        if (!photo) return;
-        const link = document.createElement('a');
-        link.href = photo.url;
-        link.download = photo.file.name || `photo-${index + 1}.jpg`;
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
+    function closeVideoModal() {
+        const modal = document.getElementById('video-modal');
+        if (modal.hidden) return;
+        modal.hidden = true;
+        document.getElementById('video-modal-iframe').src = ''; // stop playback
+        document.querySelector('.site-tagline').focus();
     }
 
-    function removeContactPhoto(index) {
-        if (!contactPhotos[index]) return;
-        URL.revokeObjectURL(contactPhotos[index].url);
-        contactPhotos.splice(index, 1);
-        renderPhotoPreviews();
-    }
-
-    // Popups for the Network status link
-    function openNetworkEmail(e) {
-        e.preventDefault();
-        window.open(`mailto:${STORE_EMAIL}?subject=Network%20Inquiry`, 'mailPopup', 'width=600,height=600,noopener,noreferrer');
-    }
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeVideoModal();
+    });
 
     function handleMailto(event, type) {
         event.preventDefault();
@@ -1090,14 +1161,8 @@
         const msg = $('#msg-body').val();
         const name = $('#msg-name').val();
 
-        let subject = `[CONTACT] ${sub}`;
-        let body = `${msg}\n\n`;
-
-        if (contactPhotos.length > 0) {
-            body += `(I have ${contactPhotos.length} photo${contactPhotos.length > 1 ? 's' : ''} to attach separately — see reminder below.)\n\n`;
-        }
-
-        body += `Best regards,\n${name}`;
+        const subject = `[CONTACT] ${sub}`;
+        const body = `${msg}\n\nBest regards,\n${name}`;
 
         const mailtoUrl = `mailto:${STORE_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 
@@ -1110,11 +1175,6 @@
             window.open(mailtoUrl, 'mailPopup', 'width=600,height=600,noopener,noreferrer');
             btn.html(oldHtml).css('opacity', '1');
 
-            if (contactPhotos.length > 0) {
-                updateBubble("Your email draft is open! Don't forget to attach your photo(s) below before hitting send.");
-            }
-
-            // Clear the text fields, but keep photo previews on-screen so they can still be dragged in
             $('#msg-subject').val('');
             $('#msg-body').val('');
             $('#msg-name').val('');
