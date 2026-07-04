@@ -3,46 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Studio 20 | Item Shop</title>
-    
+    <meta name="description" content="Video Studio 20 — new home for old media. VHS, GameCube, N64, Genesis, Xbox 360 and comics. Shop our full inventory on eBay, or contact us about selling and trading classics.">
+    <meta name="theme-color" content="#1a2436">
+    <title>Video Studio 20 | New Home for Old Media</title>
+
     <!-- Google Material Icons -->
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <!-- Fonts: Fredoka for playful headers, Nunito for clean, rounded body text -->
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Fonts: Fredoka for playful headers, Nunito for body, VT323 for VCR on-screen-display flavor -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700;800&family=Nunito:ital,wght@0,400;0,600;0,700;1,700&family=VT323&display=swap" rel="stylesheet">
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
-    <!-- SHOP INVENTORY CONFIGURATION (EASY TO EDIT) -->
-    <script>
-        // 1. EDIT BUY CONSOLES / ERAS HERE
-        const buyConsoles = [
-            "GameCube", "Xbox 360", "Sega Genesis", 
-            "Nintendo 64", "Gameboy", "VHS", "Other / Unsure"
-        ];
-
-        // 2. EDIT SELL CATEGORIES HERE
-        const sellCategories = [
-            "VHS", "Video Games", "Comics", "Consoles"
-        ];
-
-        // 3. EDIT INVENTORY ARRAY HERE
-        // Note: Make sure the 'console' matches exactly one of the buyConsoles above!
-        // Price should just be the number. It will format automatically.
-        // Add a 'stock' value to allow users to add multiples of the same item!
-        const storeInventory = [
-
-        ]; 
-    </script>
-
     <style>
         :root {
-            /* SA2 Black Market / GC Era Palette */
+            /* SA2 Black Market / GC Era Palette + VHS store extras */
             --bg-world: #1a2436;
             --panel-red: #c13a3a;
             --panel-red-dark: #8c2424;
             --border-orange: #ff9d00;
             --highlight-yellow: #ffd900;
-            --panel-light: #f8f9fa; 
+            --panel-light: #f8f9fa;
+            --vhs-cream: #f6f1e1;
+            --dc-orange: #ff6600;
             --glass-dark: rgba(0, 0, 0, 0.2);
             --text-main: #ffffff;
             --text-dark: #2d3748;
@@ -60,12 +42,12 @@
             background-image: radial-gradient(circle at 50% 0%, #2a3b5c 0%, var(--bg-world) 80%);
             color: var(--text-main);
             font-family: 'Nunito', sans-serif;
-            font-size: 15px; 
+            font-size: 15px;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 10px;
+            padding: 10px 10px 48px;
             overflow-x: hidden;
             position: relative;
         }
@@ -91,12 +73,68 @@
             animation: spinRing 20s linear infinite;
             pointer-events: none;
         }
-        
+
         .bg-ring-1 { top: -100px; right: -100px; width: 400px; height: 400px; border-width: 40px; border-style: dashed; }
         .bg-ring-2 { bottom: -50px; left: -150px; width: 500px; height: 500px; border-width: 50px; border-style: dotted; animation-direction: reverse; animation-duration: 25s; }
 
         @keyframes panBg { from { background-position: 0 0; } to { background-position: -110px 110px; } }
         @keyframes spinRing { 100% { transform: rotate(360deg); } }
+
+        /* --- CRT / VHS Overlay (scanlines + vignette + drifting tracking band) --- */
+        .crt-overlay {
+            position: fixed; inset: 0; z-index: 1200; pointer-events: none;
+            background: repeating-linear-gradient(0deg, rgba(0,0,0,0.10) 0px, rgba(0,0,0,0.10) 1px, transparent 1px, transparent 3px);
+            opacity: 0.5;
+        }
+        .crt-overlay::after {
+            content: ''; position: absolute; inset: 0;
+            background: radial-gradient(ellipse at center, transparent 62%, rgba(0,0,0,0.32) 100%);
+        }
+
+        .tracking-band {
+            position: fixed; left: 0; right: 0; top: -140px; height: 100px;
+            z-index: 1190; pointer-events: none;
+            background: linear-gradient(180deg, transparent 0%, rgba(255,255,255,0.05) 45%, rgba(255,255,255,0.09) 50%, rgba(255,255,255,0.05) 55%, transparent 100%);
+            animation: trackDrift 11s linear infinite;
+        }
+        @keyframes trackDrift {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(calc(100vh + 280px)); }
+        }
+
+        /* --- VCR On-Screen Display (that classic unset "12:00") --- */
+        .vcr-osd {
+            position: fixed; top: 12px; left: 16px; z-index: 1100;
+            font-family: 'VT323', monospace;
+            font-size: 1.35rem;
+            color: #e8f0ff;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 0 rgba(0,0,0,0.85);
+            pointer-events: none;
+            user-select: none;
+        }
+        .vcr-osd .blink { animation: osdBlink 1.4s steps(1) infinite; }
+        @keyframes osdBlink { 0%, 55% { opacity: 1; } 56%, 100% { opacity: 0; } }
+
+        /* --- Bottom "Be Kind Rewind" Ticker (the mascot walks along it) --- */
+        .ticker {
+            position: fixed; left: 0; right: 0; bottom: 0; height: 28px;
+            background: #0b1220;
+            border-top: 2px solid var(--border-orange);
+            overflow: hidden; z-index: 998;
+            display: flex; align-items: center;
+        }
+        .ticker-track {
+            display: inline-flex;
+            white-space: nowrap;
+            animation: tickerScroll 34s linear infinite;
+            font-family: 'VT323', monospace;
+            font-size: 1.1rem;
+            color: var(--highlight-yellow);
+            letter-spacing: 2px;
+            text-shadow: 1px 1px 0 #000;
+        }
+        @keyframes tickerScroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 
         /* --- Wanted Items Tooltip Animation & Style --- */
         @keyframes bounce-shake {
@@ -107,25 +145,25 @@
             80% { transform: translateY(0) rotate(5deg); }
         }
 
-        .info-tooltip-container { 
-            position: relative; 
-            display: inline-flex; 
-            align-items: center; 
-            margin-left: 10px; 
-            cursor: pointer; 
+        .info-tooltip-container {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            margin-left: 10px;
+            cursor: pointer;
             user-select: none;
             -webkit-user-select: none;
             -webkit-tap-highlight-color: transparent;
             outline: none;
         }
-        
-        .animated-info-icon { 
-            animation: bounce-shake 2s infinite; 
-            color: var(--highlight-yellow); 
-            font-size: 28px !important; 
-            text-shadow: 1px 1px 0px rgba(0,0,0,0.5); 
+
+        .animated-info-icon {
+            animation: bounce-shake 2s infinite;
+            color: var(--highlight-yellow);
+            font-size: 28px !important;
+            text-shadow: 1px 1px 0px rgba(0,0,0,0.5);
         }
-        
+
         .info-tooltip-text {
             visibility: hidden; opacity: 0; position: absolute; bottom: 130%; left: 50%; transform: translateX(-50%);
             background: var(--panel-light); color: var(--text-dark); padding: 12px; border-radius: 10px;
@@ -133,7 +171,7 @@
             transition: 0.2s; z-index: 100; text-shadow: none; line-height: 1.4; font-weight: 600;
             box-shadow: 0 5px 15px rgba(0,0,0,0.4); pointer-events: none;
         }
-        
+
         .info-tooltip-text::after {
             content: ''; position: absolute; top: 100%; left: 50%; margin-left: -8px;
             border-width: 8px; border-style: solid; border-color: var(--border-orange) transparent transparent transparent;
@@ -141,10 +179,11 @@
 
         .info-tooltip-container:hover .info-tooltip-text,
         .info-tooltip-container:active .info-tooltip-text,
-        .info-tooltip-container:focus .info-tooltip-text { 
-            visibility: visible; 
-            opacity: 1; 
-            bottom: 110%; 
+        .info-tooltip-container:focus .info-tooltip-text,
+        .info-tooltip-container:focus-visible .info-tooltip-text {
+            visibility: visible;
+            opacity: 1;
+            bottom: 110%;
         }
 
         h1, h2, h3, .menu-item, .section-header {
@@ -156,14 +195,74 @@
         ::-webkit-scrollbar-track { background: var(--panel-red-dark); border-radius: 10px; }
         ::-webkit-scrollbar-thumb { background: var(--border-orange); border-radius: 10px; border: 2px solid var(--panel-red-dark); }
 
+        /* --- Focus visibility (keyboard navigation) --- */
+        .menu-item:focus-visible,
+        .btn-submit:focus-visible,
+        .network-link:focus-visible,
+        .link-quiet:focus-visible,
+        .photo-dropzone:focus-within,
+        .photo-download:focus-visible,
+        .photo-remove:focus-visible,
+        .info-tooltip-container:focus-visible {
+            outline: 3px solid var(--highlight-yellow);
+            outline-offset: 2px;
+        }
+
         /* --- Main Layout Grid --- */
         .layout-container {
-            max-width: 1000px; 
+            max-width: 1000px;
             width: 100%;
             display: grid;
             grid-template-columns: 260px 1fr;
-            gap: 15px; 
+            gap: 15px;
             position: relative;
+        }
+
+        /* --- Brand Sign / Motto Header --- */
+        .brand-header {
+            grid-column: 1 / -1;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+
+        .site-title {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            font-family: 'Fredoka', sans-serif;
+            font-size: clamp(1.9rem, 5vw, 2.8rem);
+            font-weight: 800;
+            letter-spacing: 1px;
+            background: linear-gradient(180deg, #ffe873 0%, var(--highlight-yellow) 45%, var(--border-orange) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            filter: drop-shadow(2px 3px 0 rgba(0,0,0,0.55));
+        }
+
+        .dc-swirl {
+            width: 0.9em; height: 0.9em;
+            flex-shrink: 0;
+            animation: spinRing 22s linear infinite;
+        }
+
+        .site-subline {
+            font-family: 'VT323', monospace;
+            font-size: clamp(0.95rem, 2.4vw, 1.15rem);
+            letter-spacing: 4px;
+            color: #9fb3d1;
+            margin-top: 2px;
+            text-shadow: 1px 1px 0 #000;
+        }
+
+        .site-tagline {
+            font-family: 'Nunito', sans-serif;
+            font-style: italic;
+            font-weight: 700;
+            font-size: clamp(0.85rem, 2vw, 1rem);
+            color: var(--highlight-yellow);
+            margin-top: 4px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
         }
 
         /* --- Mascot & Speech Bubble Area --- */
@@ -172,11 +271,11 @@
             display: flex;
             gap: 15px;
             align-items: flex-end;
-            margin-bottom: 5px; 
+            margin-bottom: 5px;
         }
 
         .mascot-container {
-            width: 80px; 
+            width: 80px;
             height: 80px;
             background: var(--panel-light);
             border: 4px solid var(--border-orange);
@@ -219,6 +318,7 @@
             min-height: 50px;
             display: flex;
             align-items: center;
+            transition: opacity 0.15s ease;
         }
 
         .speech-bubble::before {
@@ -249,11 +349,11 @@
             border: 5px solid var(--border-orange);
             border-radius: 20px;
             box-shadow: inset 0 0 15px rgba(0,0,0,0.4), 0 10px 20px rgba(0,0,0,0.4);
-            padding: 15px; 
+            padding: 15px;
         }
 
         .sidebar-panel {
-            display: flex; 
+            display: flex;
             flex-direction: column;
             justify-content: space-between;
         }
@@ -268,13 +368,18 @@
         .menu-item {
             display: flex;
             align-items: center;
-            padding: 10px 16px; 
+            width: 100%;
+            padding: 10px 16px;
             cursor: pointer;
             border-radius: 25px;
             background: rgba(0,0,0,0.3);
             border: 2px solid rgba(255,255,255,0.2);
             color: var(--text-main);
             font-size: 1rem;
+            font-family: inherit;
+            text-align: left;
+            appearance: none;
+            -webkit-appearance: none;
             transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             box-shadow: inset 0 2px 4px rgba(255,255,255,0.1);
         }
@@ -285,7 +390,7 @@
             color: var(--highlight-yellow);
         }
 
-        .menu-item:not(.active):not(.under-construction):hover {
+        .menu-item:not(.active):hover {
             background: rgba(0,0,0,0.5);
             transform: scale(1.02);
         }
@@ -298,47 +403,16 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
             transform: scale(1.05);
         }
-        
+
         .menu-item.active:hover {
             transform: scale(1.08);
         }
 
         .menu-item.active .material-icons { color: var(--text-dark); }
 
-        .menu-item.under-construction {
-            position: relative;
-            overflow: hidden;
-            filter: grayscale(0.8);
-            opacity: 0.8;
-            cursor: not-allowed;
-        }
-
-        .menu-item.under-construction::after {
-            content: 'NO STOCK';
-            position: absolute;
-            top: 50%; left: -5%; width: 110%;
-            height: 28px;
-            background: repeating-linear-gradient(45deg, #ffcc00, #ffcc00 15px, #222 15px, #222 30px);
-            color: #fff;
-            font-family: 'Fredoka', sans-serif;
-            font-size: 15px;
-            font-weight: 800;
-            line-height: 24px;
-            text-align: center;
-            letter-spacing: 2px;
-            text-shadow: 
-                -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000,
-                -1px 0 0 #000, 1px 0 0 #000, 0 -1px 0 #000, 0 1px 0 #000;
-            border-top: 2px solid #000;
-            border-bottom: 2px solid #000;
-            transform: translateY(-50%) rotate(-5deg);
-            z-index: 10;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.6);
-        }
-
         /* Status Area */
         .status-area {
-            margin-top: 15px; 
+            margin-top: 15px;
             background: rgba(0,0,0,0.4);
             border-radius: 12px;
             padding: 12px;
@@ -356,11 +430,11 @@
         .status-row:last-child { margin-bottom: 0; }
 
         .status-label { color: #cbd5e0; }
-        
+
         .network-link {
-            color: #fff; 
-            font-weight: bold; 
-            font-family: 'Fredoka', sans-serif; 
+            color: #fff;
+            font-weight: bold;
+            font-family: 'Fredoka', sans-serif;
             letter-spacing: 0.5px;
             text-decoration: none;
             transition: color 0.2s;
@@ -389,9 +463,9 @@
         }
 
         .section-header {
-            font-size: 1.3rem; 
+            font-size: 1.3rem;
             color: var(--highlight-yellow);
-            margin-bottom: 15px; 
+            margin-bottom: 15px;
             display: flex;
             align-items: center;
             text-shadow: 2px 2px 0px rgba(0,0,0,0.5);
@@ -403,26 +477,142 @@
 
         .section-header .material-icons { margin-right: 10px; font-size: 26px; }
 
+        /* --- eBay Shop Card (styled like the store shelf) --- */
+        .shop-card {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 12px;
+            padding: 34px 15px 26px;
+            background: rgba(0,0,0,0.25);
+            border: 2px dashed rgba(255,255,255,0.2);
+            border-radius: 16px;
+        }
+
+        .stock-sticker {
+            position: absolute;
+            top: -12px;
+            left: -8px;
+            background: var(--highlight-yellow);
+            color: var(--text-dark);
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 800;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            padding: 4px 12px;
+            border-radius: 4px;
+            border: 2px solid #fff;
+            transform: rotate(-6deg);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.4);
+        }
+
+        .shop-card-icon {
+            width: 70px; height: 70px;
+            display: flex; align-items: center; justify-content: center;
+            background: var(--highlight-yellow);
+            border-radius: 50%;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+        }
+        .shop-card-icon .material-icons { font-size: 36px; color: var(--text-dark); }
+
+        .shop-card h3 {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1.25rem;
+            color: #fff;
+            text-shadow: 1px 1px 0 rgba(0,0,0,0.5);
+        }
+
+        .shop-card p {
+            color: #cbd5e0;
+            max-width: 460px;
+            line-height: 1.6;
+        }
+
+        /* Era badges styled as VHS spine / rental genre labels */
+        .era-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin: 6px 0 2px;
+        }
+
+        .era-badge {
+            position: relative;
+            overflow: hidden;
+            background: var(--vhs-cream);
+            color: #222;
+            border-radius: 3px;
+            padding: 9px 12px 5px;
+            font-size: 0.72rem;
+            font-weight: 800;
+            font-family: 'Nunito', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.45);
+        }
+        .era-badge::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 5px;
+            background: var(--stripe, var(--dc-orange));
+        }
+        .era-badge:nth-child(odd) { transform: rotate(-1.5deg); }
+        .era-badge:nth-child(even) { transform: rotate(1.5deg); }
+        .era-badge:nth-child(1) { --stripe: #e53238; }
+        .era-badge:nth-child(2) { --stripe: #6f5adc; }
+        .era-badge:nth-child(3) { --stripe: #38a169; }
+        .era-badge:nth-child(4) { --stripe: #3182ce; }
+        .era-badge:nth-child(5) { --stripe: #86b817; }
+        .era-badge:nth-child(6) { --stripe: #a53860; }
+        .era-badge:nth-child(7) { --stripe: #f5af02; }
+
+        .ebay-btn { max-width: 340px; gap: 8px; }
+        .ebay-wordmark {
+            font-family: Arial, Helvetica, sans-serif;
+            font-weight: 800;
+            font-size: 1.2rem;
+            letter-spacing: -0.5px;
+            text-shadow:
+                -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000,
+                -1px 0 0 #000, 1px 0 0 #000, 0 -1px 0 #000, 0 1px 0 #000;
+        }
+        .ebay-note { font-size: 0.8rem; color: #a0aec0; }
+
+        .link-quiet {
+            background: none;
+            border: none;
+            color: var(--highlight-yellow);
+            text-decoration: underline;
+            cursor: pointer;
+            font-family: 'Nunito', sans-serif;
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-top: 4px;
+        }
+        .link-quiet:hover { color: #fff; }
+
         /* Custom Form Inputs */
-        .form-group { margin-bottom: 12px; } 
-        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .form-group { margin-bottom: 12px; }
 
         label {
             display: block;
-            margin-bottom: 4px; 
+            margin-bottom: 4px;
             font-size: 0.95rem;
             font-weight: 700;
             color: #fff;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
         }
 
-        input[type="text"], select, textarea {
+        input[type="text"], textarea {
             width: 100%;
             background: var(--panel-light);
             border: 3px solid #cbd5e0;
             border-radius: 10px;
             color: var(--text-dark);
-            padding: 8px 12px; 
+            padding: 8px 12px;
             font-family: 'Nunito', sans-serif;
             font-size: 0.95rem;
             font-weight: 600;
@@ -431,269 +621,82 @@
             box-shadow: inset 0 3px 5px rgba(0,0,0,0.1);
         }
 
-        input[type="text"]:focus, select:focus, textarea:focus {
+        input[type="text"]:focus, textarea:focus {
             border-color: var(--border-orange);
             background: #fff;
             box-shadow: 0 0 0 4px rgba(255, 157, 0, 0.3);
         }
 
-        /* Readonly inputs */
-        input[readonly] {
-            background: rgba(0,0,0,0.2) !important;
-            color: #a0aec0 !important;
-            cursor: not-allowed;
-            border-color: rgba(255,255,255,0.1);
-            box-shadow: none;
-        }
-
-        /* Generated Lists inside forms */
-        .added-list-container {
-            background: rgba(0,0,0,0.3);
-            border: 2px solid rgba(255,255,255,0.1);
-            border-radius: 10px;
-            padding: 10px 15px;
-            margin-bottom: 15px;
-            display: none; /* hidden when empty */
-            box-shadow: inset 0 3px 6px rgba(0,0,0,0.3);
-            transition: background 0.3s;
-        }
-
-        .added-list-header {
-            color: var(--highlight-yellow);
-            font-family: 'Fredoka', sans-serif;
-            margin-bottom: 8px;
-            font-size: 1.05rem;
-            border-bottom: 1px dashed rgba(255,255,255,0.2);
-            padding-bottom: 4px;
-        }
-
-        .added-list-item {
+        /* --- Photo Upload / Camera Capture --- */
+        .photo-dropzone {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            padding: 6px 0;
-            font-size: 0.9rem;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-        .added-list-item:last-child { border-bottom: none; }
-        
-        .added-list-item strong { color: #fff; }
-        
-        .remove-btn {
-            color: var(--panel-red);
+            justify-content: center;
+            gap: 8px;
+            border: 3px dashed rgba(255,255,255,0.3);
+            border-radius: 12px;
+            padding: 16px;
             cursor: pointer;
-            font-size: 20px !important;
+            color: #fff;
+            font-weight: 700;
+            background: rgba(0,0,0,0.2);
             transition: 0.2s;
         }
-        .remove-btn:hover { color: #ff4d4d; transform: scale(1.1); }
+        .photo-dropzone:hover { background: rgba(0,0,0,0.35); border-color: var(--border-orange); }
+        .photo-dropzone .material-icons { color: var(--highlight-yellow); }
 
-        /* Inventory Catalog styling */
-        .catalog-notes {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
-        }
+        .photo-preview-list { margin-top: 10px; display: none; }
 
-        .instruction-note {
-            color: #68d391;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .shipping-note {
+        .photo-reminder {
+            font-size: 0.8rem;
             color: var(--highlight-yellow);
             display: flex;
             align-items: center;
-            justify-content: flex-end;
             gap: 4px;
+            margin-bottom: 8px;
+            font-weight: 600;
+            line-height: 1.4;
         }
 
-        .catalog-wrapper {
-            max-height: 220px; 
-            overflow-y: auto;
-            overflow-x: hidden;
-            padding-right: 8px;
-            margin-bottom: 15px;
-            border: 2px solid rgba(0,0,0,0.2);
-            border-radius: 12px;
-            background: rgba(0,0,0,0.15);
-            padding: 10px;
-            box-shadow: inset 0 5px 10px rgba(0,0,0,0.3);
-        }
+        .photo-thumb-row { display: flex; flex-wrap: wrap; gap: 10px; }
 
-        .catalog-search-wrapper {
+        .photo-thumb {
             position: relative;
-            margin-bottom: 10px;
-            display: flex;
-            gap: 10px;
+            width: 80px;
+            height: 80px;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid rgba(255,255,255,0.2);
+            flex-shrink: 0;
         }
 
-        .search-input-box {
-            position: relative;
-            flex-grow: 1;
-        }
+        .photo-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; cursor: grab; }
 
-        .search-input-box .material-icons {
+        .photo-download, .photo-remove {
             position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-dark);
-            opacity: 0.6;
-            z-index: 2;
-        }
-
-        .search-input-box input {
-            padding-left: 40px !important;
-            margin-bottom: 0 !important;
-        }
-
-        /* Filter Button and Dropdown */
-        .filter-btn {
-            background: var(--border-orange);
+            top: 3px;
+            background: rgba(0,0,0,0.65);
+            border: none;
             color: #fff;
-            border: 3px solid #fff;
-            border-radius: 10px;
-            padding: 0 15px;
-            cursor: pointer;
+            border-radius: 50%;
+            width: 22px; height: 22px;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: 0.1s;
-            box-shadow: 0 4px 0 rgba(0,0,0,0.3);
-        }
-        .filter-btn:active { transform: translateY(4px); box-shadow: 0 0 0 rgba(0,0,0,0); }
-
-        .filter-dropdown {
-            position: absolute;
-            top: 100%;
-            right: 0;
-            margin-top: 5px;
-            background: var(--bg-world);
-            border: 3px solid var(--border-orange);
-            border-radius: 10px;
-            padding: 10px;
-            z-index: 100;
-            display: none;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-            width: 200px;
-        }
-
-        .filter-option {
-            display: block;
-            margin-bottom: 5px;
             cursor: pointer;
-            font-size: 0.9rem;
+            padding: 0;
         }
-        .filter-option input { margin-right: 8px; }
+        .photo-download { left: 3px; }
+        .photo-remove { right: 3px; }
+        .photo-download .material-icons, .photo-remove .material-icons { font-size: 14px; }
+        .photo-download:hover, .photo-remove:hover { background: var(--panel-red); }
 
-        .catalog-group-header {
-            font-family: 'Fredoka', sans-serif;
-            color: var(--border-orange);
-            font-size: 1.1rem;
-            margin: 5px 0 10px 0;
-            padding-bottom: 5px;
-            border-bottom: 2px dashed rgba(255, 255, 255, 0.1);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            text-shadow: 1px 1px 0 #000;
-            cursor: pointer; 
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .catalog-group-header:hover { color: var(--highlight-yellow); }
-        .catalog-group-header .material-icons { transition: transform 0.2s; }
-        .catalog-group-header.collapsed .material-icons { transform: rotate(-90deg); }
-
-        .catalog-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-        .catalog-item { position: relative; background: rgba(0,0,0,0.4); border: 2px solid rgba(255,255,255,0.2); padding: 10px; border-radius: 10px; cursor: pointer; transition: 0.2s; overflow: hidden; }
-        .catalog-item:hover { background: rgba(0,0,0,0.6); border-color: var(--highlight-yellow); transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.4); }
-        .inv-name { font-weight: bold; font-family: 'Fredoka', sans-serif; color: #fff; font-size: 1rem; text-shadow: 1px 1px 0 #000; margin-bottom: 2px; }
-        .inv-details { display: flex; flex-direction: column; gap: 2px; font-size: 0.8rem; color: #cbd5e0; }
-        .inv-price { color: var(--highlight-yellow); font-weight: bold; font-size: 0.85rem;}
-
-        /* Maxed / Added to cart styles */
-        .catalog-item.item-maxed {
-            border-color: var(--highlight-yellow) !important;
-            cursor: not-allowed;
-            transform: none !important;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.5) !important;
-        }
-        
-        .maxed-overlay {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(2px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10;
-            border-radius: 8px;
-        }
-
-        .maxed-badge {
-            background: var(--highlight-yellow);
-            color: var(--text-dark);
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-family: 'Fredoka', sans-serif;
-            font-size: 0.95rem;
-            font-weight: 800;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.6);
-            transform: rotate(-5deg);
-            border: 2px solid #fff;
-            letter-spacing: 0.5px;
-            text-shadow: none;
-        }
-
-        .maxed-badge .material-icons {
-            font-size: 20px !important;
-            color: var(--text-dark) !important;
-            text-shadow: none !important;
-            margin: 0;
-        }
-
-        /* Floating Add Animation */
-        .cart-float {
-            position: fixed;
-            color: #68d391; /* Light green */
-            font-family: 'Fredoka', sans-serif;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            animation: floatUpCart 0.8s ease-out forwards;
-            pointer-events: none;
-            z-index: 9999;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
-        }
-        
-        .cart-float .material-icons {
-            font-size: 20px;
-        }
-
-        @keyframes floatUpCart {
-            0% { opacity: 1; transform: translateY(0) scale(1); }
-            100% { opacity: 0; transform: translateY(-40px) scale(1.2); }
-        }
-
-        /* --- Dreamcast/SA2 Style Arcade Button --- */
+        /* Dreamcast/SA2 Style Arcade Button */
         .btn-submit {
             background: linear-gradient(180deg, #63b3ed 0%, #3182ce 100%);
             border: 4px solid #fff;
             color: white;
-            padding: 10px 20px; 
+            padding: 10px 20px;
             border-radius: 10px;
             font-size: 1.1rem;
             font-family: 'Fredoka', sans-serif;
@@ -708,28 +711,34 @@
             text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
             text-transform: uppercase;
             letter-spacing: 1px;
-        }
-
-        .btn-add {
-            font-size: 0.95rem;
-            padding: 8px 15px;
-            margin-top: 0;
-            margin-bottom: 15px;
-            background: linear-gradient(180deg, #b794f4 0%, #805ad5 100%);
-            border-width: 3px;
+            text-decoration: none;
         }
 
         .btn-submit:hover { filter: brightness(1.1); transform: translateY(-2px); box-shadow: 0 7px 0px rgba(0,0,0,0.4); }
         .btn-submit:active { transform: translateY(5px); box-shadow: 0 0px 0px rgba(0,0,0,0.4); }
 
         .btn-blue { background: linear-gradient(180deg, #63b3ed 0%, #3182ce 100%); }
-        .btn-orange { background: linear-gradient(180deg, #f6ad55 0%, #dd6b20 100%); }
         .btn-purple { background: linear-gradient(180deg, #b794f4 0%, #805ad5 100%); }
+
+        /* Respect users who prefer reduced motion */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+            .tracking-band { display: none; }
+        }
 
         /* Mobile Responsiveness */
         @media (max-width: 800px) {
-            body { padding: 5px; align-items: flex-start; }
+            body { padding: 5px 5px 40px; align-items: flex-start; }
             .layout-container { grid-template-columns: 1fr; gap: 10px; }
+
+            .vcr-osd { display: none; }
+            .ticker { height: 24px; }
+            .ticker-track { font-size: 0.95rem; }
 
             .header-area { flex-direction: column; align-items: center; gap: 10px; margin-bottom: 0px; }
             .mascot-container { width: 70px; height: 70px; border-width: 3px; }
@@ -759,21 +768,12 @@
             .menu-item .material-icons { margin-right: 0; margin-bottom: 4px; font-size: 24px; }
 
             .status-area { display: none; }
-            .form-row { grid-template-columns: 1fr; gap: 0; }
-            
+
             .section-header { font-size: 1.2rem; padding: 8px; border-radius: 10px; justify-content: center; text-align: center; }
             .section-header .material-icons { font-size: 22px; margin-right: 6px; }
-            
-            .catalog-grid { grid-template-columns: 1fr; }
-            
-            .catalog-notes {
-                flex-direction: column;
-                gap: 5px;
-                text-align: center;
-            }
-            .instruction-note, .shipping-note {
-                justify-content: center;
-            }
+
+            .shop-card { padding: 26px 12px 20px; }
+            .stock-sticker { left: 4px; }
 
             /* Mobile Tooltip Adjustment */
             .info-tooltip-text { width: 200px; left: auto; right: -50px; transform: none; }
@@ -783,41 +783,58 @@
 </head>
 <body>
 
-<!-- Animated Walking Mascot -->
-<img id="walking-sprite" src="animations/mascot_walk.gif" alt="Walking Mascot" style="position: fixed; bottom: 10px; left: -100px; height: 55px; z-index: 999; pointer-events: none; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.5));">
+<!-- VCR On-Screen Display (decorative) -->
+<div class="vcr-osd" aria-hidden="true">&#9654; PLAY&nbsp;&nbsp;<span class="blink">12:00</span>&nbsp;SP</div>
+
+<!-- Animated Walking Mascot (walks along the rewind ticker) -->
+<img id="walking-sprite" src="animations/mascot_walk.gif" alt="" style="position: fixed; bottom: 28px; left: -100px; height: 55px; z-index: 999; pointer-events: none; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.5));">
 
 <!-- SA2 Style Background Elements -->
 <div class="bg-pattern"></div>
 <div class="bg-ring bg-ring-1"></div>
 <div class="bg-ring bg-ring-2"></div>
 
+<!-- CRT / VHS Overlays -->
+<div class="crt-overlay" aria-hidden="true"></div>
+<div class="tracking-band" aria-hidden="true"></div>
+
 <div class="layout-container">
-    
+
+    <!-- Store Sign / Motto -->
+    <div class="brand-header">
+        <h1 class="site-title">
+            <svg class="dc-swirl" viewBox="0 0 100 100" aria-hidden="true">
+                <path d="M50 50 m-4 0 a4 4 0 1 1 8 0 a8 8 0 1 1 -16 0 a12 12 0 1 1 24 0 a16 16 0 1 1 -32 0"
+                      fill="none" stroke="#ff6600" stroke-width="7" stroke-linecap="round"/>
+            </svg>
+            Video Studio 20
+        </h1>
+        <p class="site-subline" aria-hidden="true">VHS &#9733; RETRO GAMES &#9733; COMICS</p>
+        <p class="site-tagline">&ldquo;New home for old media &mdash; since the tape era.&rdquo;</p>
+    </div>
+
     <!-- Top Mascot & Speech Bubble -->
     <div class="header-area">
         <div class="mascot-container">
             <!-- Mascot Image -->
             <img src="images/mascot.png" alt="Video Studio 20 Mascot" id="mascot-img">
         </div>
-        <div class="speech-bubble" id="desc-text">
-            "Welcome to Video Studio 20!"
+        <div class="speech-bubble" id="desc-text" aria-live="polite">
+            "Welcome in! Send us a message below — or hit Shop to browse our eBay shelves."
         </div>
     </div>
 
     <!-- Sidebar Menu -->
     <div class="gc-panel sidebar-panel">
-        <div class="menu-list">
-            <div class="menu-item active" data-target="buy" data-desc="Looking for a specific classic? Let us know what you need!">
-                <i class="material-icons">shopping_cart</i> Buy Items
-            </div>
-            <div class="menu-item" data-target="sell" data-desc="Have classics to offload? Let us take a look!">
-                <i class="material-icons">paid</i> Sell
-            </div>
-            <div class="menu-item" data-target="contact" data-desc="Got a question? Send us a message via the internet!">
-                <i class="material-icons">email</i> Contact
-            </div>
-        </div>
-        
+        <nav class="menu-list" aria-label="Site sections">
+            <button type="button" class="menu-item" data-target="shop" data-desc="Everything on our shelves lives on eBay — browse, Buy It Now, or send an offer any time.">
+                <i class="material-icons" aria-hidden="true">storefront</i> Shop
+            </button>
+            <button type="button" class="menu-item active" data-target="contact" data-desc="Got something to sell, trade, or ask about? Send us a message — attach a photo if it helps!" aria-current="true">
+                <i class="material-icons" aria-hidden="true">mail_outline</i> Contact
+            </button>
+        </nav>
+
         <div class="status-area">
             <div class="status-row">
                 <span class="status-label">Network:</span>
@@ -828,68 +845,43 @@
 
     <!-- Main Content Area -->
     <div class="gc-panel content-area">
-        
-        <!-- BUY SECTION -->
-        <div id="view-buy" class="view-content active">
+
+        <!-- SHOP SECTION -->
+        <div id="view-shop" class="view-content">
             <div class="section-header">
-                <i class="material-icons">search</i> Current Stock & Requests
+                <i class="material-icons">storefront</i> Shop Our Collection
             </div>
 
-            <!-- Dynamic Catalog Area -->
-            <div id="catalog-ui" style="display:none;">
-                <div class="catalog-search-wrapper">
-                    <div class="search-input-box">
-                        <i class="material-icons">search</i>
-                        <input type="text" id="catalog-search" placeholder="Search title...">
-                    </div>
-                    <button class="filter-btn" id="filter-toggle" type="button">
-                        <i class="material-icons">filter_list</i>
-                    </button>
-                    <!-- Filter Dropdown -->
-                    <div class="filter-dropdown" id="filter-menu">
-                        <div style="font-family:'Fredoka'; color:var(--highlight-yellow); margin-bottom:5px; border-bottom:1px solid #555; padding-bottom:3px;">Filter by Era</div>
-                        <div id="filter-checkboxes"></div>
-                    </div>
-                </div>
-                
-                <div class="catalog-notes">
-                    <div class="instruction-note"><i class="material-icons" style="font-size: 16px;">touch_app</i> Click/Tap items to add to request list</div>
-                    <div class="shipping-note"><i class="material-icons" style="font-size: 16px;">info</i> Prices exclude Standard S&H. Local pickup available.</div>
+            <div class="shop-card">
+                <span class="stock-sticker">IN STOCK &#9733;</span>
+                <div class="shop-card-icon"><i class="material-icons">storefront</i></div>
+                <h3>Our full inventory lives on eBay</h3>
+                <p>Every tape, cart, and comic we currently have for sale is listed there first — browse condition photos, buy it now, or send an offer straight from the listing.</p>
+
+                <div class="era-badges">
+                    <span class="era-badge">Movies &amp; VHS</span>
+                    <span class="era-badge">Retro Games</span>
+                    <span class="era-badge">Comics</span>
+                    <span class="era-badge">Collectibles</span>
                 </div>
 
-                <div class="catalog-wrapper">
-                    <div id="buy-catalog"></div>
-                </div>
+                <a class="btn-submit btn-blue ebay-btn" href="https://www.ebay.com/usr/elementium" target="_blank" rel="noopener noreferrer">
+                    <span class="ebay-wordmark"><span style="color:#e53238">e</span><span style="color:#0064d2">B</span><span style="color:#f5af02">a</span><span style="color:#86b817">y</span></span>
+                    &nbsp;Visit Our Store
+                    <i class="material-icons" style="margin-left:6px; font-size:20px;" aria-hidden="true">open_in_new</i>
+                </a>
+                <p class="ebay-note">Opens in a new tab &middot; eBay store: <strong>elementium</strong></p>
+
+                <button type="button" class="link-quiet" onclick="gotoContact()">Got tapes or games to sell us? Get in touch &rarr;</button>
             </div>
-
-            <form onsubmit="handleMailto(event, 'buy')">
-                <!-- List Output Box -->
-                <div id="buy-list-container" class="added-list-container">
-                    <div class="added-list-header">Your Requested Items:</div>
-                    <div id="buy-list-items"></div>
-                </div>
-
-                <div class="form-group">
-                    <label>Additional Information (Optional)</label>
-                    <textarea id="buy-info" rows="2" placeholder="Any shipping details, condition preferences, or questions?"></textarea>
-                </div>
-                <div class="form-group">
-                    <label>Your Name</label>
-                    <input type="text" id="buy-name" required>
-                </div>
-                
-                <button type="submit" class="btn-submit btn-blue">
-                    <i class="material-icons">send</i> Send Request Email
-                </button>
-            </form>
         </div>
 
-        <!-- SELL SECTION -->
-        <div id="view-sell" class="view-content">
+        <!-- CONTACT SECTION -->
+        <div id="view-contact" class="view-content active">
             <div class="section-header">
-                <i class="material-icons" style="color: #68d391;">storefront</i> Sell Items
+                <i class="material-icons" style="color: #f687b3;" aria-hidden="true">mail_outline</i> Contact Us
                 <div class="info-tooltip-container" tabindex="0">
-                    <i class="material-icons animated-info-icon">stars</i>
+                    <i class="material-icons animated-info-icon" aria-hidden="true">stars</i>
                     <div class="info-tooltip-text">
                         <strong style="color: var(--panel-red-dark); font-family: 'Fredoka', sans-serif;">Actively Looking For:</strong><br>
                         <hr style="border: 1px dashed #cbd5e0; margin: 4px 0;">
@@ -899,67 +891,32 @@
                     </div>
                 </div>
             </div>
-            <form onsubmit="handleMailto(event, 'sell')">
+            <form id="contact-form" onsubmit="handleMailto(event, 'contact')">
                 <div class="form-group">
-                    <label>Item Name & Condition</label>
-                    <input type="text" id="sell-item-input" placeholder="e.g. Halo 3 (CIB, Good Condition)">
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Category</label>
-                        <select id="sell-cat-input"></select>
-                    </div>
-                    <div class="form-group">
-                        <label>Desired Price / Trade</label>
-                        <input type="text" id="sell-price-input" placeholder="e.g. $50 or Trade for Pikmin">
-                    </div>
-                </div>
-
-                <button type="button" class="btn-submit btn-add" onclick="addSellItem()">
-                    <i class="material-icons" style="font-size: 20px; margin-right: 5px;">add_circle</i> Add to Offer List
-                </button>
-
-                <!-- List Output Box -->
-                <div id="sell-list-container" class="added-list-container">
-                    <div class="added-list-header">Your Trade/Sell Offers:</div>
-                    <div id="sell-list-items"></div>
-                </div>
-
-                <div class="form-group">
-                    <label>Additional Information (Optional)</label>
-                    <textarea id="sell-info" rows="2" placeholder="Any history on these items, bundle deals, etc.?"></textarea>
-                </div>
-                <div class="form-group">
-                    <label>Your Name</label>
-                    <input type="text" id="sell-name" required>
-                </div>
-
-                <button type="submit" class="btn-submit btn-orange">
-                    <i class="material-icons">monetization_on</i> Send Offer Email
-                </button>
-            </form>
-        </div>
-
-        <!-- CONTACT SECTION -->
-        <div id="view-contact" class="view-content">
-            <div class="section-header">
-                <i class="material-icons" style="color: #f687b3;">mail_outline</i> Send a Message
-            </div>
-            <form onsubmit="handleMailto(event, 'contact')">
-                <div class="form-group">
-                    <label>Subject</label>
+                    <label for="msg-subject">Subject</label>
                     <input type="text" id="msg-subject" placeholder="General Inquiry" required>
                 </div>
                 <div class="form-group">
-                    <label>Your Message</label>
-                    <textarea id="msg-body" rows="4" placeholder="How can we help?" required></textarea>
+                    <label for="msg-body">Your Message</label>
+                    <textarea id="msg-body" rows="4" placeholder="How can we help? Selling or trading something? Tell us what you've got!" required></textarea>
                 </div>
+
                 <div class="form-group">
-                    <label>Your Name</label>
+                    <label for="contact-photo">Attach a Photo (Optional)</label>
+                    <label class="photo-dropzone" for="contact-photo">
+                        <i class="material-icons" aria-hidden="true">add_a_photo</i>
+                        <span>Tap to upload or take a photo</span>
+                    </label>
+                    <input type="file" id="contact-photo" accept="image/*" capture="environment" multiple hidden>
+                    <div id="photo-preview-list" class="photo-preview-list" aria-live="polite"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="msg-name">Your Name</label>
                     <input type="text" id="msg-name" required>
                 </div>
                 <button type="submit" class="btn-submit btn-purple">
-                    <i class="material-icons">send</i> Send Message
+                    <i class="material-icons" aria-hidden="true">send</i> Send Message
                 </button>
             </form>
         </div>
@@ -967,211 +924,96 @@
     </div>
 </div>
 
+<!-- Bottom rewind ticker -->
+<div class="ticker" aria-hidden="true">
+    <div class="ticker-track">
+        <span>&#9733; BE KIND &mdash; PLEASE REWIND &#9733; VHS &#9733; RETRO GAMES &#9733; COMICS &#9733; NEW HOME FOR OLD MEDIA &#9733; VIDEO STUDIO 20 &#9733;&nbsp;</span>
+        <span>&#9733; BE KIND &mdash; PLEASE REWIND &#9733; VHS &#9733; RETRO GAMES &#9733; COMICS &#9733; NEW HOME FOR OLD MEDIA &#9733; VIDEO STUDIO 20 &#9733;&nbsp;</span>
+    </div>
+</div>
+
 <script>
     // UPDATED STORE EMAIL
     const STORE_EMAIL = "ElementiumVHS@gmail.com";
+    const MAX_PHOTOS = 3;
+    const MAX_PHOTO_BYTES = 8 * 1024 * 1024; // 8MB
 
-    // Item Cart Arrays
-    let buyItemsList = [];
-    let sellItemsList = [];
+    // Photos attached in the Contact form: [{ file, url }]
+    let contactPhotos = [];
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     $(document).ready(function() {
-        
-        // --- 1. POPULATE DROPDOWNS FROM ARRAYS ---
-        buyConsoles.forEach(consoleName => {
-            // Also populate the filter menu
-            $('#filter-checkboxes').append(`
-                <label class="filter-option">
-                    <input type="checkbox" value="${consoleName}" class="cat-filter" checked> ${consoleName}
-                </label>
-            `);
-        });
 
-        sellCategories.forEach(catName => {
-            $('#sell-cat-input').append(`<option value="${catName}">${catName}</option>`);
-        });
-
-        // --- 2. INITIALIZE INVENTORY / CATALOG UI ---
-        const buyBtn = $('.menu-item[data-target="buy"]');
-        
-        if(storeInventory.length === 0) {
-            buyBtn.addClass('under-construction');
-            buyBtn.data('desc', 'The Buy market is currently out of stock. Check back later!');
-            
-            // Default to Sell tab instead
-            $('.menu-item').removeClass('active');
-            $('.view-content').removeClass('active');
-            
-            $('.menu-item[data-target="sell"]').addClass('active');
-            $('#view-sell').addClass('active');
-            $('#desc-text').text(`"${$('.menu-item[data-target="sell"]').data('desc')}"`);
-        } else {
-            $('#catalog-ui').show();
-            renderCatalog();
-
-            $('#catalog-search').on('input', renderCatalog);
-            $('.cat-filter').on('change', renderCatalog);
-        }
-
-        // Toggle Filter Dropdown
-        $('#filter-toggle').on('click', function(e) {
-            e.stopPropagation();
-            $('#filter-menu').fadeToggle(100);
-        });
-        
-        // Hide filter dropdown when clicking outside
-        $(document).on('click', function() {
-            $('#filter-menu').fadeOut(100);
-        });
-        $('#filter-menu').on('click', function(e){
-            e.stopPropagation();
-        });
-
-        // --- 3. MENU NAVIGATION ---
+        // --- MENU NAVIGATION ---
         $('.menu-item').on('click', function() {
-            if($(this).hasClass('under-construction')) {
-                updateBubble("BZZT! Area under construction! We have nothing to sell right now.");
-                return; 
-            }
-
             const target = $(this).data('target');
             const desc = $(this).data('desc');
 
-            $('.menu-item').removeClass('active');
-            $(this).addClass('active');
+            $('.menu-item').removeClass('active').removeAttr('aria-current');
+            $(this).addClass('active').attr('aria-current', 'true');
 
             updateBubble(desc);
 
             $('.view-content').removeClass('active');
-            void document.getElementById(`view-${target}`).offsetWidth; 
+            void document.getElementById(`view-${target}`).offsetWidth;
             $(`#view-${target}`).addClass('active');
+        });
+
+        // --- PHOTO UPLOAD / CAMERA CAPTURE ---
+        $('#contact-photo').on('change', function(e) {
+            const files = Array.from(e.target.files || []);
+
+            files.forEach(file => {
+                if (contactPhotos.length >= MAX_PHOTOS) {
+                    return;
+                }
+                if (file.size > MAX_PHOTO_BYTES) {
+                    alert(`"${file.name}" is larger than 8MB — please choose a smaller photo.`);
+                    return;
+                }
+                contactPhotos.push({ file, url: URL.createObjectURL(file) });
+            });
+
+            e.target.value = ''; // allow re-selecting the same file later
+            renderPhotoPreviews();
         });
 
         // Animated Walking Mascot Logic
         function walkMascotSequence() {
             const sprite = $('#walking-sprite');
-            const timestamp = new Date().getTime(); 
-            
+            const timestamp = new Date().getTime();
+
             sprite.attr('src', 'animations/mascot_walk.gif?t=' + timestamp);
             sprite.css({ left: '-100px' });
-            
+
             sprite.animate({ left: '50%' }, 4000, 'linear', function() {
                 const waveTimestamp = new Date().getTime();
                 sprite.attr('src', 'animations/mascot_wave.gif?t=' + waveTimestamp);
-                
-                const waveDurationMs = 1200; 
-                
+
+                const waveDurationMs = 1200;
+
                 setTimeout(() => {
                     const walkTimestamp = new Date().getTime();
                     sprite.attr('src', 'animations/mascot_walk.gif?t=' + walkTimestamp);
-                    
+
                     sprite.animate({ left: '110%' }, 4000, 'linear', function() {
                         const nextAppearance = Math.floor(Math.random() * 30000) + 15000;
-                        setTimeout(walkMascotSequence, nextAppearance); 
+                        setTimeout(walkMascotSequence, nextAppearance);
                     });
-                }, waveDurationMs); 
+                }, waveDurationMs);
             });
         }
-        
-        const initialDelay = Math.floor(Math.random() * 7000) + 3000;
-        setTimeout(walkMascotSequence, initialDelay);
+
+        // Skip the decorative walk-across-screen animation for reduced-motion users
+        if (!prefersReducedMotion) {
+            const initialDelay = Math.floor(Math.random() * 7000) + 3000;
+            setTimeout(walkMascotSequence, initialDelay);
+        } else {
+            $('#walking-sprite').hide();
+        }
 
     });
-
-    // --- ITEM LIST LOGIC ---
-    function removeBuyItem(index) {
-        buyItemsList.splice(index, 1);
-        renderBuyList();
-        renderCatalog(); // Re-render to un-max the catalog item!
-    }
-
-    function renderBuyList() {
-        const container = $('#buy-list-container');
-        const listOutput = $('#buy-list-items');
-        
-        if(buyItemsList.length === 0) {
-            container.hide();
-            return;
-        }
-
-        container.show();
-        let html = '';
-        let total = 0;
-        
-        buyItemsList.forEach((item, i) => {
-            const itemTotal = item.price * item.quantity;
-            total += itemTotal;
-            html += `
-            <div class="added-list-item">
-                <div>
-                    <strong>${item.name}</strong> <span style="color:#cbd5e0; font-size: 0.8rem;">(${item.platform})</span>
-                    <span style="color: #68d391; font-weight:bold; font-size:0.95rem; margin-left: 5px;">x${item.quantity}</span>
-                    <div style="color:var(--highlight-yellow); font-weight: bold; font-size: 0.85rem;">$${itemTotal}</div>
-                </div>
-                <i class="material-icons remove-btn" onclick="removeBuyItem(${i})">cancel</i>
-            </div>`;
-        });
-        
-        // Add Total Row
-        html += `
-        <div class="added-list-item" style="border-top: 2px dashed rgba(255,255,255,0.2); margin-top: 8px; padding-top: 10px;">
-            <div style="font-family: 'Fredoka', sans-serif; font-size: 1.1rem; color: #fff;">Estimated Total:</div>
-            <div style="color:var(--highlight-yellow); font-family: 'Fredoka', sans-serif; font-size: 1.1rem; font-weight: bold;">
-                $${total} <span style="font-size: 0.75rem; font-weight: normal; color: #a0aec0;">+ S&H</span>
-            </div>
-        </div>`;
-        
-        listOutput.html(html);
-    }
-
-    function addSellItem() {
-        const name = $('#sell-item-input').val().trim();
-        const cat = $('#sell-cat-input').val();
-        const price = $('#sell-price-input').val().trim();
-        
-        if(!name) return; // Prevent empty adds
-        
-        sellItemsList.push({ name, cat, price: price || 'TBD' });
-        $('#sell-item-input').val(''); 
-        $('#sell-price-input').val(''); 
-        renderSellList();
-    }
-
-    function removeSellItem(index) {
-        sellItemsList.splice(index, 1);
-        renderSellList();
-    }
-
-    function renderSellList() {
-        const container = $('#sell-list-container');
-        const listOutput = $('#sell-list-items');
-        
-        if(sellItemsList.length === 0) {
-            container.hide();
-            return;
-        }
-
-        container.show();
-        let html = '';
-        sellItemsList.forEach((item, i) => {
-            html += `
-            <div class="added-list-item">
-                <div>
-                    <strong>${item.name}</strong> 
-                    <span style="color:var(--border-orange); font-size: 0.8rem;">[Asking: ${item.price}]</span><br>
-                    <span style="color:#cbd5e0; font-size: 0.75rem;">Category: ${item.cat}</span>
-                </div>
-                <i class="material-icons remove-btn" onclick="removeSellItem(${i})">cancel</i>
-            </div>`;
-        });
-        listOutput.html(html);
-    }
-
-    // Toggle category collapse
-    function toggleCategory(headerElement) {
-        $(headerElement).toggleClass('collapsed');
-        $(headerElement).next('.catalog-grid').slideToggle(200);
-    }
 
     // Helper to animate speech bubble text
     function updateBubble(text) {
@@ -1183,113 +1025,56 @@
         }, 150);
     }
 
-    // When clicking a catalog item, ADD TO LIST directly
-    function selectCatalogItem(event, name, platform, price, stock) {
-        // Check if item is already in list
-        const existingItem = buyItemsList.find(i => i.name === name);
-
-        if (existingItem) {
-            if (existingItem.quantity >= stock) {
-                return;
-            }
-            existingItem.quantity += 1;
-        } else {
-            buyItemsList.push({ name, platform, price, stock, quantity: 1 });
-        }
-        
-        // Play floating add animation at EXACT click coordinates
-        if (event) {
-            const floater = $('<div class="cart-float">+1 <i class="material-icons">add_shopping_cart</i></div>');
-            
-            let x, y;
-            // Use precise mouse/tap coordinates if available
-            if (event.clientX !== undefined && event.clientY !== undefined) {
-                x = event.clientX - 30; // Offset left slightly to center over cursor
-                y = event.clientY - 20; // Offset up slightly so it spawns at cursor tip
-            } 
-            // Fallback to card center if coords fail
-            else if (event.currentTarget) {
-                const rect = event.currentTarget.getBoundingClientRect();
-                x = rect.left + (rect.width / 2) - 30; 
-                y = rect.top + 20;
-            }
-            
-            if (x !== undefined && y !== undefined) {
-                floater.css({ left: x + 'px', top: y + 'px' });
-                $('body').append(floater); // Append to body so it survives renderCatalog DOM wipe
-                setTimeout(() => floater.remove(), 800);
-            }
-        }
-        
-        renderBuyList();
-        renderCatalog(); // Re-render to show maxed overlays
-
-        // Flash the list to show it was populated
-        $('#buy-list-container').css('background', 'rgba(255,217,0,0.3)');
-        setTimeout(() => $('#buy-list-container').css('background', 'rgba(0,0,0,0.3)'), 400);
+    // Cross-link from the Shop card to the Contact tab
+    function gotoContact() {
+        $('.menu-item[data-target="contact"]').trigger('click');
     }
 
-    // Renders the catalog with text and checkbox filtering
-    function renderCatalog() {
-        const filterText = $('#catalog-search').val().toLowerCase();
-        
-        const activeConsoles = [];
-        $('.cat-filter:checked').each(function() {
-            activeConsoles.push($(this).val());
-        });
-        
-        const filtered = storeInventory.filter(item => 
-            activeConsoles.includes(item.console) &&
-            (item.name.toLowerCase().includes(filterText) || item.console.toLowerCase().includes(filterText))
-        );
+    // Renders the photo thumbnail previews with download/remove controls
+    function renderPhotoPreviews() {
+        const list = $('#photo-preview-list');
 
-        if (filtered.length === 0) {
-            $('#buy-catalog').html('<div style="text-align:center; padding: 20px; color: #cbd5e0; font-family: \'Fredoka\', sans-serif;">No items found matching criteria.</div>');
+        if (contactPhotos.length === 0) {
+            list.hide().empty();
             return;
         }
 
-        const grouped = {};
-        filtered.forEach(item => {
-            if(!grouped[item.console]) grouped[item.console] = [];
-            grouped[item.console].push(item);
+        let html = `<p class="photo-reminder"><i class="material-icons" style="font-size:16px;" aria-hidden="true">info</i> Emails can't auto-attach photos — drag one into your email window, or download it first.</p>`;
+        html += '<div class="photo-thumb-row">';
+
+        contactPhotos.forEach((p, i) => {
+            html += `
+            <div class="photo-thumb">
+                <img src="${p.url}" alt="Attached photo preview ${i + 1}" draggable="true">
+                <button type="button" class="photo-download" onclick="downloadContactPhoto(${i})" aria-label="Download photo ${i + 1} to attach manually">
+                    <i class="material-icons" aria-hidden="true">download</i>
+                </button>
+                <button type="button" class="photo-remove" onclick="removeContactPhoto(${i})" aria-label="Remove photo ${i + 1}">
+                    <i class="material-icons" aria-hidden="true">close</i>
+                </button>
+            </div>`;
         });
 
-        let html = '';
-        for(const [consoleName, items] of Object.entries(grouped)) {
-            html += `<div class="catalog-group-header" onclick="toggleCategory(this)">
-                        ${consoleName} 
-                        <i class="material-icons">expand_more</i>
-                     </div>`;
-            html += `<div class="catalog-grid">`;
-            items.forEach(item => {
-                const safeName = item.name.replace(/'/g, "\\'");
-                const safeConsole = item.console.replace(/'/g, "\\'");
-                const formattedPrice = `$${item.price}`;
-                const safeStock = item.stock || 1; // Default to 1 if not set
+        html += '</div>';
+        list.html(html).show();
+    }
 
-                // Check if user has maxed out this item in their cart
-                const inCartItem = buyItemsList.find(i => i.name === item.name);
-                const inCartQty = inCartItem ? inCartItem.quantity : 0;
-                const isMaxed = inCartQty >= safeStock;
+    function downloadContactPhoto(index) {
+        const photo = contactPhotos[index];
+        if (!photo) return;
+        const link = document.createElement('a');
+        link.href = photo.url;
+        link.download = photo.file.name || `photo-${index + 1}.jpg`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+    }
 
-                const maxedClass = isMaxed ? "item-maxed" : "";
-                const maxedOverlay = isMaxed ? `<div class="maxed-overlay"><div class="maxed-badge"><i class="material-icons">shopping_basket</i> IN CART</div></div>` : "";
-                const clickHandler = isMaxed ? "" : `onclick="selectCatalogItem(event, '${safeName}', '${safeConsole}', ${item.price}, ${safeStock})"`;
-
-                html += `
-                <div class="catalog-item ${maxedClass}" ${clickHandler}>
-                    ${maxedOverlay}
-                    <div class="inv-name">${item.name}</div>
-                    <div class="inv-details">
-                        <span class="inv-price">${formattedPrice}</span>
-                        <span class="inv-console" style="text-align:right">+ S&H</span>
-                    </div>
-                </div>`;
-            });
-            html += `</div>`;
-        }
-        
-        $('#buy-catalog').html(html);
+    function removeContactPhoto(index) {
+        if (!contactPhotos[index]) return;
+        URL.revokeObjectURL(contactPhotos[index].url);
+        contactPhotos.splice(index, 1);
+        renderPhotoPreviews();
     }
 
     // Popups for the Network status link
@@ -1300,91 +1085,39 @@
 
     function handleMailto(event, type) {
         event.preventDefault();
-        
-        let subject = "";
-        let body = "";
 
-        if (type === 'sell') {
-            // Auto-add if they typed something but forgot to hit the "+ Add" button
-            if($('#sell-item-input').val().trim() !== '') {
-                addSellItem();
-            }
+        const sub = $('#msg-subject').val();
+        const msg = $('#msg-body').val();
+        const name = $('#msg-name').val();
 
-            if (sellItemsList.length === 0) {
-                alert("Please add at least one item to your offer list before sending!");
-                return;
-            }
+        let subject = `[CONTACT] ${sub}`;
+        let body = `${msg}\n\n`;
 
-            const name = $('#sell-name').val();
-            const info = $('#sell-info').val().trim();
-            
-            subject = `[SELL/TRADE] Offer from ${name}`;
-            body = `Hello Video Studio 20,\n\nI have the following items for sale/trade:\n\n`;
-            
-            sellItemsList.forEach(item => {
-                body += `• ${item.name}\n  - Category: ${item.cat}\n  - Asking: ${item.price}\n\n`;
-            });
-
-            if (info) {
-                body += `Additional Information:\n${info}\n\n`;
-            }
-
-            // The requested condition visibility photo reminder
-            body += `*** PLEASE NOTE ***\nDon't forget to attach clear photos of the items (front, back, and any damage) to this email so we can verify their condition!\n\n`;
-            body += `Best regards,\n${name}`;
-
-        } else if (type === 'buy') {
-            if (buyItemsList.length === 0) {
-                alert("Please click/tap an item from the catalog to add it to your request list before sending!");
-                return;
-            }
-
-            const name = $('#buy-name').val();
-            const info = $('#buy-info').val().trim();
-            
-            subject = `[BUY REQUEST] Inquiry from ${name}`;
-            body = `Hello Video Studio 20,\n\nI am looking to purchase the following items:\n\n`;
-
-            let total = 0;
-            buyItemsList.forEach(item => {
-                const itemTotal = item.price * item.quantity;
-                total += itemTotal;
-                body += `• ${item.name} (${item.platform}) - $${item.price} x ${item.quantity} = $${itemTotal}\n`;
-            });
-
-            body += `\nEstimated Subtotal: $${total} (+ S&H)\n`;
-
-            if (info) {
-                body += `\nAdditional Information:\n${info}\n`;
-            }
-
-            body += `\nPlease let me know if these are available and what the final total is with shipping.\n\nBest regards,\n${name}`;
-
-        } else if (type === 'contact') {
-            const sub = $('#msg-subject').val();
-            const msg = $('#msg-body').val();
-            const name = $('#msg-name').val();
-            subject = `[CONTACT] ${sub}`;
-            body = `${msg}\n\nBest regards,\n${name}`;
+        if (contactPhotos.length > 0) {
+            body += `(I have ${contactPhotos.length} photo${contactPhotos.length > 1 ? 's' : ''} to attach separately — see reminder below.)\n\n`;
         }
 
+        body += `Best regards,\n${name}`;
+
         const mailtoUrl = `mailto:${STORE_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-        
+
         // Visual button feedback
         const btn = $(event.target).find('button[type="submit"]');
         const oldHtml = btn.html();
         btn.html('<i class="material-icons">sync</i> Opening Email...').css('opacity', '0.8');
-        
+
         setTimeout(() => {
             window.open(mailtoUrl, 'mailPopup', 'width=600,height=600,noopener,noreferrer');
             btn.html(oldHtml).css('opacity', '1');
-            
-            // Clear arrays and update UI after a successful send attempt
-            buyItemsList = [];
-            sellItemsList = [];
-            renderBuyList();
-            renderSellList();
-            event.target.reset(); // clears the other text fields
+
+            if (contactPhotos.length > 0) {
+                updateBubble("Your email draft is open! Don't forget to attach your photo(s) below before hitting send.");
+            }
+
+            // Clear the text fields, but keep photo previews on-screen so they can still be dragged in
+            $('#msg-subject').val('');
+            $('#msg-body').val('');
+            $('#msg-name').val('');
         }, 800);
     }
 </script>
